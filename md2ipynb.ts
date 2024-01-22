@@ -230,10 +230,10 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
     "```",
     "```python",
     "import json",
-    "from openalex_api import Configuration, " + entities.map(e => `${capitalize(e)}Api`).join(", "),
+    "from openalex_api import Configuration, ApiClient," + entities.map(e => `${capitalize(e)}Api`).join(", "),
     "",
     `configuration = Configuration(host="https://api.openalex.org")`,
-    entities.map(e => `${e}_api = ${capitalize(e)}Api(configuration)`).join("\n"),
+    entities.map(e => `${e}_api = ${capitalize(e)}Api(ApiClient(configuration))`).join("\n"),
     "```",
   ].join("\n");;
 
