@@ -234,14 +234,18 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
     lines.unshift(pipInstallCodeFence); // Add at the start if not present
   }
 
+  let linesAddedSoFar = 0;
+
   lines.forEach((line, i) => {
     const urls = [...new Set(line.match(/https:\/\/api.openalex.org\/[a-z]+[^)\s'\]\(`'"]+/gi)?.map(url => url.replace(/\\_/g, "_").replace(/\\&/g, "&")))];
+
     if (urls.length > 0) {
       const codeFences = urls.map(url => convertUrlToApiCallCodeFence(url));
       codeFences.forEach(codeFence => {
         if (!file.includes(codeFence)) {
-          const insertionIndex = findInsertionIndex(i, lines);
-          lines.splice(insertionIndex, 0, codeFence);
+          const insertionIndex = findInsertionIndex(i, lines, linesAddedSoFar);
+          lines.splice(insertionIndex, 0, ...codeFence.split("\n"));
+          linesAddedSoFar += codeFence.split("\n").length; // Update the count of added lines
         }
       });
     }
@@ -255,8 +259,7 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
   }
 }
 
-function findInsertionIndex(currentIndex: number, lines: string | any[]) {
-  // Check if the current line is within a code fence
+function findInsertionIndex(currentIndex: number, lines: string[], linesAddedSoFar: number = 0) {
   let inCodeFence = false;
   let codeFenceEndIndex = currentIndex;
 
@@ -264,7 +267,6 @@ function findInsertionIndex(currentIndex: number, lines: string | any[]) {
     if (lines[i].trim() === "```") {
       inCodeFence = !inCodeFence;
       if (!inCodeFence) {
-        // We've found the beginning of the code fence
         break;
       }
     }
@@ -274,17 +276,16 @@ function findInsertionIndex(currentIndex: number, lines: string | any[]) {
   }
 
   if (inCodeFence) {
-    // Find the end of the code fence
     for (let i = codeFenceEndIndex; i < lines.length; i++) {
       if (lines[i].trim() === "```") {
-        return i + 1; // Insert after the closing of the code fence
+        return i + 1 + linesAddedSoFar; // Adjusted for added lines
       }
     }
   }
 
-  // If not in a code fence, insert after the current line
-  return currentIndex + 1;
+  return currentIndex + 1 + linesAddedSoFar; // Adjusted for added lines
 }
+
 
 
 
