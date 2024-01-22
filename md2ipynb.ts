@@ -137,6 +137,7 @@ export function markdown2notebook(input: fs.PathLike, output: fs.PathLike) {
       [], []);
 
     console.log(`Wrote ${output}`);
+    fs.writeFileSync(output, JSON.stringify(notebook, null, 2));
     return notebook;
   } catch (e) {
     console.log(e);
@@ -149,8 +150,8 @@ export function main() {
   const input = process.argv[2];
   const output = process.argv[3];
   if (!input || !output) {
-    recursivelyProcessFilesInDir(".", /^(?!.*node_modules).*\.md$/, ".md", convertApiUrlsToApiCalls);
-    // recursivelyProcessFilesInDir(".", /^(?!.*node_modules).*\.md$/, ".ipynb", markdown2notebook);
+    recursivelyProcessFilesInDir(".", /^(?!.*node_modules).*[^(py)]\.md$/, ".py.md", convertApiUrlsToApiCalls);
+    recursivelyProcessFilesInDir(".", /^(?!.*node_modules).*\.py\.md$/, ".ipynb", markdown2notebook);
   }
   // markdown2notebook(input, output);
 }
@@ -169,8 +170,7 @@ function recursivelyProcessFilesInDir(dir: string, match: RegExp, outputFilename
     if (stat.isDirectory()) {
       recursivelyProcessFilesInDir(path, match, outputFilename, fn);
     } else if (stat.isFile() && file.match(match)) {
-      // replace the file extension with the output extension
-      const output = `${path.replace(/\.[^/.]+$/, "")}${outputFilename}`;
+      const output = `${path.replace(/\.[^/.]+\.[^/.]+$/, "")}${outputFilename}`;
       fn(path, output);
     }
   }
@@ -229,6 +229,7 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
     pipCommand,
     "```",
     "```python",
+    "import json",
     "from openalex_api import Configuration, " + entities.map(e => `${capitalize(e)}Api`).join(", "),
     "",
     `configuration = Configuration(host="https://api.openalex.org")`,
