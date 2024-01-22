@@ -138,6 +138,8 @@ export function markdown2notebook(input: fs.PathLike, output: fs.PathLike) {
 
     console.log(`Wrote ${output}`);
     fs.writeFileSync(output, JSON.stringify(notebook, null, 2));
+    // remove the input file
+    fs.unlinkSync(input.toString());
     return notebook;
   } catch (e) {
     console.log(e);
@@ -223,8 +225,17 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
     "publishers",
     "sources",
     "works",
-  ]
+
+  ];
+
+  const owner = "Mearman";
+  const repo = "openalex-docs";
+  const branch = "main";
+  let ipynbFilename = input.toString().replace(/\.md$/, ".ipynb").replace(/^\.\//, "");
+
+  const colabLink = `[![Open All Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/${owner}/${repo}/blob/main/${ipynbFilename})`;
   const pipInstallCodeFence = [
+    colabLink,
     "```python",
     pipCommand,
     "```",
