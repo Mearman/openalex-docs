@@ -2,7 +2,7 @@
 
 The autocomplete endpoint lets you add autocomplete or typeahead components to your applications, without the overhead of hosting your own API endpoint.&#x20;
 
-Each endpoint takes a string, and (very quickly) returns a list of entities that match that string.
+Each endpoint takes a string, and (very quickly) returns a list of entities that Match that string.
 
 Here's an example of an autocomplete component that lets users quickly select an institution:
 
