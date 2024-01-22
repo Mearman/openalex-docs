@@ -82,9 +82,10 @@ function convertMarkdownToJupyterNotebook(
 					source: segment.split("\n"),
 				};
 			}
-		}).map((cell) => ({
+		})
+		.map((cell) => ({
 			...cell,
-			source: cell.source.join("\n").trim().split("\n")
+			source: cell.source.join("\n").trim().split("\n"),
 		}))
 		.filter((cell) => {
 			if (!removeCells) {
@@ -165,10 +166,17 @@ export function main() {
 		/^(?!.*node_modules).*\.md$/,
 		(filepath: fs.PathLike, content: string) => {
 			const markdownWithoutHeaders = removeYamlHeaders(content);
-			const markdownWithApiCalls = convertApiUrlsToApiCalls(markdownWithoutHeaders, path.relative(__dirname, filepath.toString()));
+			const markdownWithApiCalls = convertApiUrlsToApiCalls(
+				markdownWithoutHeaders,
+				path.relative(__dirname, filepath.toString())
+			);
 			const contentHasUpdated: boolean = content !== markdownWithApiCalls;
 			const markdownWithRelativeLinks = makeLinksRelative(markdownWithApiCalls);
-			const markdownWithIpynbLinks = updateMdLinksToIpynb(markdownWithRelativeLinks, filepath, fs.existsSync);
+			const markdownWithIpynbLinks = updateMdLinksToIpynb(
+				markdownWithRelativeLinks,
+				filepath,
+				fs.existsSync
+			);
 			const notebook = convertMarkdownToJupyterNotebook(markdownWithIpynbLinks);
 
 			const output = filepath
@@ -283,7 +291,6 @@ function convertApiUrlsToApiCalls(
 
 	const colabLink = `[![Open in Colab](https://img.shields.io/badge/Open%20in-Colab-F9AB00?style=for-the-badge&logo=Google%20Colab&link=https://colab.research.google.com/github/${owner}/${repo}/blob/${branch}/${ipynbFilename})](https://colab.research.google.com/github/${owner}/${repo}/blob/${branch}/${ipynbFilename})`;
 
-
 	const pipInstallCodeFence = [
 		repoRootLink + githubLink + colabLink,
 		"```python",
@@ -302,6 +309,7 @@ function convertApiUrlsToApiCalls(
 	].join("\n");
 
 	let apiCallModified = false; // Flag to track if any API call is modified or added
+	let offset = 0;
 
 	const matches: (Match | undefined)[] = lines.map((line, i) => {
 		const urls = [
@@ -326,15 +334,21 @@ function convertApiUrlsToApiCalls(
 	const filteredMatches: Match[] = matches.filter(Boolean) as Match[];
 
 	if (filteredMatches.length > 0) {
-		let offset = 0;
 		filteredMatches.forEach(({ urls, i }) => {
 			if (urls.length > 0) {
 				const codeFences = urls.map(({ code }) => code);
 				codeFences.forEach((codeFence) => {
 					if (!originalContent.includes(codeFence)) {
-						const insertionIndex = findInsertionIndex(i, lines, offset);
-						lines.splice(insertionIndex, 0, ...codeFence.split("\n"));
-						offset += codeFence.split("\n").length;
+						const codeFenceLines = codeFence.split("\n");
+						const insertionIndex = findInsertionIndex(
+							codeFenceLines,
+							i,
+							lines,
+							offset
+						);
+						const codeFenceLenght = codeFenceLines.length;
+						lines.splice(insertionIndex, 0, ...codeFenceLines);
+						offset += codeFenceLenght;
 						apiCallModified = true;
 					}
 				});
@@ -348,41 +362,48 @@ function convertApiUrlsToApiCalls(
 	}
 	return lines.join("\n");
 }
-
 function findInsertionIndex(
+	newLines: string[],
 	currentIndex: number,
 	lines: string[],
 	offset: number
 ) {
-	let inCodeFence = false;
-	let codeFenceEndIndex = currentIndex;
-
 	// Check if the current line is a Markdown line break
 	const isMarkdownLineBreak = lines[currentIndex].trim().endsWith("\\");
 
+	// Check for single-line code fence at the current index
+	if (
+		lines[currentIndex].trim().startsWith("```") &&
+		lines[currentIndex].trim().endsWith("```")
+	) {
+		// The current line is a single-line code fence; insert after it
+		return currentIndex + 1 + offset;
+	}
+
+	// Check for multi-line code fences
+	let inCodeFence = false;
 	for (let i = currentIndex; i >= 0; i--) {
 		if (lines[i].trim() === "```") {
 			inCodeFence = !inCodeFence;
 			if (!inCodeFence) {
+				// Found the start of the multi-line code fence; break
 				break;
 			}
-		}
-		if (inCodeFence) {
-			codeFenceEndIndex = i;
 		}
 	}
 
 	if (inCodeFence) {
-		for (let i = codeFenceEndIndex; i < lines.length; i++) {
+		// Find the end of the multi-line code fence
+		for (let i = currentIndex; i < lines.length; i++) {
 			if (lines[i].trim() === "```") {
-				return i + 1 + offset;
+				return i + 1 + offset - newLines.length; // Insert before the end of the multi-line code fence
 			}
 		}
 	} else if (isMarkdownLineBreak) {
-		return currentIndex + 2 + offset
+		return currentIndex + 2 + offset; // Skip the next line due to Markdown line break
 	}
 
-	return currentIndex + 1 + offset;
+	return currentIndex + 1 + offset; // Regular case, outside a code fence
 }
 
 function capitalize(entity: string) {
@@ -393,37 +414,39 @@ function makeLinksRelative(conctent: string): string {
 	const lines = conctent.split("\n");
 	const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
 
-	return lines.map(line => {
-		return line.replace(linkRegex, (match, text, url) => {
-			// Split URL into the document path and the anchor
-			const [path, anchor] = url.split('#');
+	return lines
+		.map((line) => {
+			return line.replace(linkRegex, (match, text, url) => {
+				// Split URL into the document path and the anchor
+				const [path, anchor] = url.split("#");
 
-			// Check if the link is a document link (not starting with http:// or https://)
-			if (!/^https?:\/\//.test(path)) {
-				let modifiedPath = path;
+				// Check if the link is a document link (not starting with http:// or https://)
+				if (!/^https?:\/\//.test(path)) {
+					let modifiedPath = path;
 
-				// Prepend "./" if it's not there
-				if (!modifiedPath.startsWith("./")) {
-					modifiedPath = "./" + modifiedPath;
+					// Prepend "./" if it's not there
+					if (!modifiedPath.startsWith("./")) {
+						modifiedPath = "./" + modifiedPath;
+					}
+
+					// Append "README.md" if the link ends with "/"
+					if (modifiedPath.endsWith("/")) {
+						modifiedPath += "README.md";
+					}
+					// Ensure the link ends with ".md" if it is not a directory
+					else if (!modifiedPath.endsWith(".md")) {
+						modifiedPath += ".md";
+					}
+
+					// Reconstruct the URL with the anchor if it was present
+					url = modifiedPath + (anchor ? "#" + anchor : "");
 				}
 
-				// Append "README.md" if the link ends with "/"
-				if (modifiedPath.endsWith("/")) {
-					modifiedPath += "README.md";
-				}
-				// Ensure the link ends with ".md" if it is not a directory
-				else if (!modifiedPath.endsWith(".md")) {
-					modifiedPath += ".md";
-				}
-
-				// Reconstruct the URL with the anchor if it was present
-				url = modifiedPath + (anchor ? '#' + anchor : '');
-			}
-
-			// Return the modified link
-			return `[${text}](${url})`;
-		});
-	}).join("\n");
+				// Return the modified link
+				return `[${text}](${url})`;
+			});
+		})
+		.join("\n");
 }
 
 // type FileExistenceChecker = (path: string) => boolean;
@@ -449,28 +472,33 @@ type FileExistenceChecker = typeof fs.existsSync;
 // 	}).join("\n");
 // }
 
-
-function updateMdLinksToIpynb(content: string, sourceFile: fs.PathLike, fileExists: FileExistenceChecker = fs.existsSync): string {
+function updateMdLinksToIpynb(
+	content: string,
+	sourceFile: fs.PathLike,
+	fileExists: FileExistenceChecker = fs.existsSync
+): string {
 	const mdLinkRegex = /\[([^\]]+)\]\(([^)]+\.md)\)/g;
 	const lines = content.split("\n");
 	const baseDir = path.dirname(sourceFile.toString());
 
-	return lines.map(line => {
-		return line.replace(mdLinkRegex, (match, text, mdPath) => {
-			// Construct the absolute path for the .md file
-			const absoluteMdPath = path.join(baseDir, mdPath);
-			// Construct the absolute path for the corresponding .ipynb file
-			const absoluteIpynbPath = absoluteMdPath.replace(/\.md$/, '.ipynb');
+	return lines
+		.map((line) => {
+			return line.replace(mdLinkRegex, (match, text, mdPath) => {
+				// Construct the absolute path for the .md file
+				const absoluteMdPath = path.join(baseDir, mdPath);
+				// Construct the absolute path for the corresponding .ipynb file
+				const absoluteIpynbPath = absoluteMdPath.replace(/\.md$/, ".ipynb");
 
-			// Check if the .ipynb file exists
-			if (fileExists(absoluteIpynbPath)) {
-				// Construct the relative path for the .ipynb file
-				const relativeIpynbPath = mdPath.replace(/\.md$/, '.ipynb');
-				return `[${text}](${relativeIpynbPath})`;
-			}
+				// Check if the .ipynb file exists
+				if (fileExists(absoluteIpynbPath)) {
+					// Construct the relative path for the .ipynb file
+					const relativeIpynbPath = mdPath.replace(/\.md$/, ".ipynb");
+					return `[${text}](${relativeIpynbPath})`;
+				}
 
-			// If .ipynb file does not exist, keep the .md link
-			return match;
-		});
-	}).join("\n");
+				// If .ipynb file does not exist, keep the .md link
+				return match;
+			});
+		})
+		.join("\n");
 }
