@@ -158,19 +158,19 @@ export function main() {
 		".",
 		/^(?!.*node_modules).*\.md$/,
 		(path: fs.PathLike, content: string) => {
-			// const markdown = fs.readFileSync(input, "utf-8");
-			const markdown = content;
-			const markdownWithoutYamlHeaders = removeYamlHeaders(markdown);
-			const markdownWithApiCalls = convertApiUrlsToApiCalls(
-				markdownWithoutYamlHeaders,
-				path
-			);
-			const notebook = convertMarkdownToJupyterNotebook(markdownWithApiCalls);
+			const original = content;
+			content = removeYamlHeaders(content);
+
+			content = convertApiUrlsToApiCalls(content, path);
+
+			const notebook = convertMarkdownToJupyterNotebook(content);
+
 			const output = path
 				.toString()
 				.replace(/(\.[a-z0-9]+)+$/i, ".ipynb")
 				.replace(/^\.\//, "");
-			if (markdown !== markdownWithApiCalls) {
+
+			if (content !== original) {
 				fs.writeFileSync(output, JSON.stringify(notebook, null, 2));
 			}
 			return notebook;
@@ -210,7 +210,7 @@ function convertUrlToApiCallCodeFence(url: string) {
 	const entity = pathname.split("/")[1];
 	const id: string | undefined = pathname.split("/")[2];
 	const searchParams = typedUrl.searchParams;
-	const params: { key: string; value: string }[] = Array.from(searchParams).map(
+	const params: { key: string; value: string; }[] = Array.from(searchParams).map(
 		([key, value]) => ({ key, value })
 	);
 
@@ -240,7 +240,7 @@ function convertUrlToApiCallCodeFence(url: string) {
 
 type Match = {
 	line: string;
-	urls: { url: string[]; code: string }[];
+	urls: { url: string[]; code: string; }[];
 	i: number;
 };
 
@@ -279,7 +279,7 @@ function convertApiUrlsToApiCalls(
 		"```python",
 		"import json",
 		"from openalex_api import Configuration, ApiClient," +
-			entities.map((e) => `${capitalize(e)}Api`).join(", "),
+		entities.map((e) => `${capitalize(e)}Api`).join(", "),
 		"",
 		`configuration = Configuration(host="https://api.openalex.org")`,
 		entities
