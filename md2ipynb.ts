@@ -210,11 +210,10 @@ function convertUrlToApiCallCodeFence(url: string) {
 	const entity = pathname.split("/")[1];
 	const id: string | undefined = pathname.split("/")[2];
 	const searchParams = typedUrl.searchParams;
-	const params: { key: string; value: string; }[] = Array.from(searchParams).map(
+	const params: { key: string; value: string }[] = Array.from(searchParams).map(
 		([key, value]) => ({ key, value })
 	);
 
-	const apiClass = `${capitalize(entity)}Api`;
 	const apiInstance = `${entity}_api`;
 
 	// drop the s from the call if there is an id
@@ -241,7 +240,7 @@ function convertUrlToApiCallCodeFence(url: string) {
 
 type Match = {
 	line: string;
-	urls: { url: string[]; code: string; }[];
+	urls: { url: string[]; code: string }[];
 	i: number;
 };
 
@@ -280,7 +279,7 @@ function convertApiUrlsToApiCalls(
 		"```python",
 		"import json",
 		"from openalex_api import Configuration, ApiClient," +
-		entities.map((e) => `${capitalize(e)}Api`).join(", "),
+			entities.map((e) => `${capitalize(e)}Api`).join(", "),
 		"",
 		`configuration = Configuration(host="https://api.openalex.org")`,
 		entities
@@ -315,7 +314,7 @@ function convertApiUrlsToApiCalls(
 
 	if (filteredMatches.length > 0) {
 		let offset = 0;
-		filteredMatches.forEach(({ line, urls, i }) => {
+		filteredMatches.forEach(({ urls, i }) => {
 			if (urls.length > 0) {
 				const codeFences = urls.map(({ code }) => code);
 				codeFences.forEach((codeFence) => {
@@ -375,34 +374,4 @@ function findInsertionIndex(
 
 function capitalize(entity: string) {
 	return entity.charAt(0).toUpperCase() + entity.slice(1);
-}
-
-function isLineInCodeFence(index: number, lines: string[]) {
-	let inCodeFence = false;
-	for (let i = 0; i <= index; i++) {
-		if (lines[i].trim().match(/^```/)) {
-			inCodeFence = !inCodeFence;
-		}
-	}
-	return inCodeFence;
-}
-
-function findCodeFenceSartLine(index: number, lines: string[]) {
-	let startLine = 0;
-	for (let i = 0; i <= index; i++) {
-		if (lines[i].trim().match(/^```/)) {
-			startLine = i;
-		}
-	}
-	return startLine;
-}
-
-function findCodeFenceEndLine(index: any, lines: string | any[]) {
-	let endLine = 0;
-	for (let i = index; i < lines.length; i++) {
-		if (lines[i].trim().match(/^```/)) {
-			endLine = i;
-		}
-	}
-	return endLine;
 }
