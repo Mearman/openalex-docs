@@ -217,137 +217,108 @@ function convertUrlToApiCallCodeFence(url: string) {
   return codeFence;
 }
 
+
 function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
   const file = fs.readFileSync(input, "utf-8");
   let lines = file.split("\n");
-  const untouchedLines: string[] = lines;
+  const originalContent = file; // Save original content for comparison
 
   const pipCommand = `%pip install --upgrade --no-cache-dir "git+https://github.com/Mearman/openalex-python.git"`;
-  // Define the pip install code fence
   const pipInstallCodeFence = [
     "```python",
     pipCommand,
     "```"
-  ].join("\n");
+  ].join("\n");;
 
-  // Check if the file already contains the pip install code fence
-  const containsPipInstall = lines.some(line => line.includes(pipCommand));
-
-  // If not, add the pip install code fence at the start
-  let codeFenceAdded = false;
+  if (!file.includes(pipCommand)) {
+    lines.unshift(pipInstallCodeFence); // Add at the start if not present
+  }
 
   lines.forEach((line, i) => {
-    // if (line.includes("api.openalex.org") && !line.includes("](")) {
-    // const urls = [...new Set(line.match())];
-    //   [`https://api.openalex.org/authors?filter=display_name.search:tupolev`](https://api.openalex.org/authors?filter=display\_name.search:tupolev)
-    // const urls = [...new Set(line.match(/https:\/\/api.openalex.org\/[^)\s'"]+/g)?.map(url => url.replace("\\_", "_")))];
-    const urls = [...new Set(
-      line.match(
-        /https:\/\/api.openalex.org\/[a-z]+[^)\s'\]\(`'"]+/gi
-      )?.map(
-        // replace all instances of \_ with _
-        url => url.replace(/\\_/g, "_")
-          // replace \& with &
-          .replace(/\\&/g, "&")
-      )
-    )];
-
-    if (urls.length > 1) {
-      console.log(`Found ${urls.length} urls in line ${i}`);
-    }
+    const urls = [...new Set(line.match(/https:\/\/api.openalex.org\/[a-z]+[^)\s'\]\(`'"]+/gi)?.map(url => url.replace(/\\_/g, "_").replace(/\\&/g, "&")))];
     if (urls.length > 0) {
-      const codeFences = [...new Set(urls.map(url => convertUrlToApiCallCodeFence(url)))];
-
-      // moving outwards from the current line, detect if it is within the opening and closing tags for a code fence
-      // const openingCodeFenceIndex = lines.slice(0, i).reverse().findIndex(l => l.trim() === "```") + i;
-      // const closingCodeFenceIndex = lines.slice(i + 1).findIndex(l => l.trim() === "```") + i + 1;
-      // const withinCodeFence = openingCodeFenceIndex > closingCodeFenceIndex;
-      const inCodefence = isLineInCodeFence(i, lines);
-
-      let targetLineIndex = i + 1;
-      if (inCodefence.isInCodeFence) {
-        targetLineIndex = inCodefence.endLine + 1;
-      }
-
-      // detect if codefence has already been added
-      // const codeFenceAlreadyAdded = lines.slice(0, targetLineIndex).some(l => l.includes(codeFences[0]));
-
-      // if (!codeFenceAlreadyAdded) {
-      // add the pip install code fence if it hasn't already been added
-
-      // splice into the array at the target line index
-      console.log(`Adding code fence at line ${targetLineIndex}`);
-      const codeFencesArrayString = codeFences.join("\n\n");
-      const codeFenceString = codeFencesArrayString;
-
-      let containsCodeFence = false;
-
-      // if lines does not contain codefence at any point then add it
-      for (let i = 0; i < lines.length - codeFenceString.split("\n").length; i++) {
-        const linesToCheck = lines.slice(i, i + codeFenceString.split("\n").length);
-        const linesToCheckString = linesToCheck.join("\n");
-        if (linesToCheckString === codeFenceString) {
-          containsCodeFence = true;
-          break;
+      const codeFences = urls.map(url => convertUrlToApiCallCodeFence(url));
+      codeFences.forEach(codeFence => {
+        if (!file.includes(codeFence)) {
+          const insertionIndex = findInsertionIndex(i, lines);
+          lines.splice(insertionIndex, 0, codeFence);
         }
-      }
-      if (!containsCodeFence) {
-        // lines.splice(targetLineIndex, 0, codeFenceString);
-        const linesBefore = lines.slice(0, targetLineIndex);
-        const linesAfter = lines.slice(targetLineIndex);
-        lines = [
-          ...linesBefore,
-          ...codeFenceString.split("\n"),
-          ...linesAfter
-        ];
-      } else {
-        console.log("Code fence already added");
-        // }
-      }
-
-      if (!containsPipInstall && !codeFenceAdded) {
-        console.log("Adding pip install code fence");
-        lines = pipInstallCodeFence.split("\n").concat(lines);
-        codeFenceAdded = true;
-      }
+      });
     }
   });
 
-  if (untouchedLines != lines) {
-    fs.writeFileSync(output, lines.join("\n"));
+  const updatedContent = lines.join("\n");
+  if (originalContent !== updatedContent) {
+    fs.writeFileSync(output, updatedContent);
   } else {
     console.log("No changes made");
   }
-  // Write the updated content to the output file
 }
+
+function findInsertionIndex(currentIndex: number, lines: string | any[]) {
+  // Check if the current line is within a code fence
+  let inCodeFence = false;
+  let codeFenceEndIndex = currentIndex;
+
+  for (let i = currentIndex; i >= 0; i--) {
+    if (lines[i].trim() === "```") {
+      inCodeFence = !inCodeFence;
+      if (!inCodeFence) {
+        // We've found the beginning of the code fence
+        break;
+      }
+    }
+    if (inCodeFence) {
+      codeFenceEndIndex = i;
+    }
+  }
+
+  if (inCodeFence) {
+    // Find the end of the code fence
+    for (let i = codeFenceEndIndex; i < lines.length; i++) {
+      if (lines[i].trim() === "```") {
+        return i + 1; // Insert after the closing of the code fence
+      }
+    }
+  }
+
+  // If not in a code fence, insert after the current line
+  return currentIndex + 1;
+}
+
+
 
 function capitalize(entity: string) {
   return entity.charAt(0).toUpperCase() + entity.slice(1);
 }
 
 
-function isLineInCodeFence(index: number, lines: string[]): { isInCodeFence: false; } | { isInCodeFence: true, startLine: number, endLine: number; } {
-  let isInCodeFence = false;
-  let startLine: number | undefined = undefined;
-  let endLine: number | undefined = undefined;
-  lines = lines.map(l => l.split("\n")).flat();
-
-  const matcher = /\`\`\`/g;
-  // if there are an odd number of code fences before the current line, then the current line is within a code fence
-  // const codeFenceCountBefore = lines.slice(0, index).filter(l => l.trim() === "```").length;
-  // const codeFenceCountBefore = lines.slice(0, index).filter(l => l.match(/```/g)).length;
-
-  // oddNumber of ``` lines above
-  const codeFenceCountBefore = lines.slice(0, index).filter(l => l.match(matcher)).length;
-
-  isInCodeFence = codeFenceCountBefore % 2 === 1;
-
-  if (isInCodeFence) {
-    startLine = lines.slice(0, index).reverse().findIndex(l => l.match(matcher)) + index;
-    endLine = lines.slice(index + 1).findIndex(l => l.match(matcher)) + index + 1;
-    return { isInCodeFence, startLine: startLine!, endLine: endLine! };
-  } else {
-    return { isInCodeFence: false };
+function isLineInCodeFence(index: number, lines: string[]) {
+  let inCodeFence = false;
+  for (let i = 0; i <= index; i++) {
+    if (lines[i].trim().match(/^```/)) {
+      inCodeFence = !inCodeFence;
+    }
   }
+  return inCodeFence;
 }
 
+function findCodeFenceSartLine(index: number, lines: string[]) {
+  let startLine = 0;
+  for (let i = 0; i <= index; i++) {
+    if (lines[i].trim().match(/^```/)) {
+      startLine = i;
+    }
+  }
+  return startLine;
+}
+
+function findCodeFenceEndLine(index: any, lines: string | any[]) {
+  let endLine = 0;
+  for (let i = index; i < lines.length; i++) {
+    if (lines[i].trim().match(/^```/)) {
+      endLine = i;
+    }
+  }
+  return endLine;
+}
