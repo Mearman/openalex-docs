@@ -109,7 +109,14 @@ function convertMarkdownToJupyterNotebook(
 				}
 			});
 			return cell;
-		});
+		})
+		// add newline to all source lines except for the last
+		.map((cell) => ({
+			...cell,
+			source: cell.source.map((line, i) =>
+				i === cell.source.length - 1 ? line : line + "\n"
+			),
+		}));
 
 	const notebook: JupyterNotebook = {
 		cells: cells.filter((cell) => cell.source.join("\n").trim() !== ""),
