@@ -162,14 +162,26 @@ export function markdown2notebook(input: fs.PathLike, output: fs.PathLike) {
   }
 }
 
-
+function removeYamlHeaders(input: fs.PathLike, output: fs.PathLike) {
+  const file = fs.readFileSync(input, "utf-8");
+  const lines = file.split("\n");
+  const yamlHeaderStart = lines.findIndex(line => line.match(/^---\s*$/));
+  if (yamlHeaderStart != -1) {
+    const yamlHeaderEnd = lines.findIndex((line, i) => i > yamlHeaderStart && line.match(/^---\s*$/));
+    if (yamlHeaderEnd != -1) {
+      lines.splice(yamlHeaderStart, yamlHeaderEnd - yamlHeaderStart + 1);
+    }
+  }
+  fs.writeFileSync(output, lines.join("\n"));
+}
 
 export function main() {
   const input = process.argv[2];
   const output = process.argv[3];
   if (!input || !output) {
-    recursivelyProcessFilesInDir(".", /^(?!.*node_modules).*[^(py)]\.md$/, ".py.md", convertApiUrlsToApiCalls);
-    recursivelyProcessFilesInDir(".", /^(?!.*node_modules).*\.py\.md$/, ".ipynb", markdown2notebook);
+    recursivelyProcessFilesInDir(".", /^(?!.*node_modules).*\.md$/, ".mda", removeYamlHeaders);
+    recursivelyProcessFilesInDir(".", /^(?!.*node_modules).*\.mda$/, ".mdp", convertApiUrlsToApiCalls);
+    recursivelyProcessFilesInDir(".", /^(?!.*node_modules).*\.mdp$/, ".ipynb", markdown2notebook);
   }
   // markdown2notebook(input, output);
 }
