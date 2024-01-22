@@ -227,6 +227,12 @@ function convertUrlToApiCallCodeFence(url: string) {
 }
 
 
+type Match = {
+  line: string;
+  urls: { url: string[]; code: string; }[];
+  i: number;
+};
+
 function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
   const file = fs.readFileSync(input, "utf-8");
   let lines = file.split("\n");
@@ -262,23 +268,41 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
     `configuration = Configuration(host="https://api.openalex.org")`,
     entities.map(e => `${e}_api = ${capitalize(e)}Api(ApiClient(configuration))`).join("\n"),
     "```",
-  ].join("\n");;
+  ].join("\n");
 
   let apiCallModified = false; // Flag to track if any API call is modified or added
 
-  let linesAddedSoFar = 0;
-
-  lines.forEach((line, i) => {
-    const urls = [...new Set(line.match(/https:\/\/api.openalex.org\/[a-z]+[^)\s'\]\(`'"]+/gi)?.map(url => url.replace(/\\_/g, "_").replace(/\\&/g, "&")))];
-
+  const matches: (Match | undefined)[] = lines.map((line, i) => {
+    const urls = [...new Set(line.match(/https:\/\/api.openalex.org\/[a-z]+[^)\s'\](`"]+/gi)?.map(url => url.replace(/\\_/g, "_").replace(/\\&/g, "&")))];
     if (urls.length > 0) {
-      apiCallModified = true; // Set flag to true as an API call is modified or added
-      const codeFences = urls.map(url => convertUrlToApiCallCodeFence(url));
+      return {
+        line,
+        urls: urls.map(url => ({
+          url: urls,
+          code: convertUrlToApiCallCodeFence(url)
+        })),
+        i,
+      };
+    }
+
+  });
+
+  const filteredMatches: Match[] = matches.filter(Boolean) as Match[];
+
+  if (filteredMatches.length == 0) {
+    console.log("No matches");
+    return;
+  }
+  let offset = 0;
+  filteredMatches.forEach(({ line, urls, i }) => {
+    if (urls.length > 0) {
+      const codeFences = urls.map(({ code }) => code);
       codeFences.forEach(codeFence => {
         if (!file.includes(codeFence)) {
-          const insertionIndex = findInsertionIndex(i, lines, linesAddedSoFar);
+          const insertionIndex = findInsertionIndex(i, lines, offset);
           lines.splice(insertionIndex, 0, ...codeFence.split("\n"));
-          linesAddedSoFar += codeFence.split("\n").length;
+          offset += codeFence.split("\n").length;
+          apiCallModified = true;
         }
       });
     }
