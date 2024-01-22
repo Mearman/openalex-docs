@@ -3,11 +3,22 @@ import * as fs from "fs";
 import { PathLike } from "fs";
 
 // Define the structure of a Jupyter Notebook cell
-interface NotebookCell {
+interface BaseNotebookCell {
   cell_type: "markdown" | "code";
   metadata: {};
   source: string[];
 }
+
+interface CodeCell extends BaseNotebookCell {
+  cell_type: "code";
+  outputs: any[];
+}
+
+interface MarkdownCell extends BaseNotebookCell {
+  cell_type: "markdown";
+}
+
+type NotebookCell = CodeCell | MarkdownCell;
 
 // Define the structure of a Jupyter Notebook
 interface JupyterNotebook {
@@ -51,6 +62,7 @@ function convertMarkdownToJupyterNotebook(
           cell_type: "code",
           metadata: {},
           source: segment.replace(/```python\n|```/g, "").split("\n"),
+          outputs: [],
         };
       } else if (segment.startsWith("```bash") || segment.startsWith("```sh")) {
         return {
@@ -59,6 +71,7 @@ function convertMarkdownToJupyterNotebook(
           source: ["%%bash"].concat(
             segment.replace(/```(?:bash|sh)\n|```/g, "").split("\n")
           ),
+          outputs: [],
         };
       } else {
         return {
