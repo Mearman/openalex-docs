@@ -265,7 +265,7 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
   const owner = "Mearman";
   const repo = "openalex-docs";
   const branch = "main";
-  let ipynbFilename = input.toString().replace(/\.md$/, ".ipynb").replace(/^\.\//, "");
+  let ipynbFilename = input.toString().replace(/(\.[a-z0-9]+)+$/i, ".ipynb").replace(/^\.\//, "");
 
   const colabLink = `[![Open All Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/${owner}/${repo}/blob/${branch}/${ipynbFilename})`;
   const pipInstallCodeFence = [
