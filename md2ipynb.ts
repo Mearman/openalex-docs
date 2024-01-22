@@ -258,10 +258,12 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
     console.log("No changes made");
   }
 }
-
-function findInsertionIndex(currentIndex: number, lines: string[], linesAddedSoFar: number = 0) {
+function findInsertionIndex(currentIndex: number, lines: string[], linesAddedSoFar: number) {
   let inCodeFence = false;
   let codeFenceEndIndex = currentIndex;
+
+  // Check if the current line is a Markdown line break
+  const isMarkdownLineBreak = lines[currentIndex].trim().endsWith('\\');
 
   for (let i = currentIndex; i >= 0; i--) {
     if (lines[i].trim() === "```") {
@@ -281,10 +283,13 @@ function findInsertionIndex(currentIndex: number, lines: string[], linesAddedSoF
         return i + 1 + linesAddedSoFar; // Adjusted for added lines
       }
     }
+  } else if (isMarkdownLineBreak) {
+    return currentIndex + 2 + linesAddedSoFar; // Skip the next line as well due to Markdown line break
   }
 
   return currentIndex + 1 + linesAddedSoFar; // Adjusted for added lines
 }
+
 
 
 
