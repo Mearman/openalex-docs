@@ -216,31 +216,36 @@ function convertUrlToApiCallCodeFence(url: string) {
   return codeFence;
 }
 
+
 function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
   const file = fs.readFileSync(input, "utf-8");
-  let lines = file.split("\n");
+  let lines: string[] = file.split("\n");
   lines = lines.map((line, i) => {
     if (line.includes("api.openalex.org") && !line.includes("](")) {
-      // if next non-empty line is a code fence, skip this line
-      if (i + 1 < lines.length && lines[i + 1].match(/^```python/)) {
-        return line;
-      }
-      console.log(line);
       const urls = [...new Set(line.match(/https:\/\/api.openalex.org\/[^)\s'"]+/g))];
-      // sample: [https://]api.openalex.org/[ENTITY]/[ID]?[PARAMS]
-      const codeFence = Array.from(urls).map(url => {
-        return convertUrlToApiCallCodeFence(url);
-      });
-      console.log(urls);
-      return [
-        line,
-        codeFence
-      ].join("\n");
+      if (urls.length > 0) {
+        const nextNonEmptyLineIndex = lines.slice(i + 1).findIndex(l => l.trim() !== '') + i + 1;
+        const nextNonEmptyLine = lines[nextNonEmptyLineIndex];
+
+        // Check if the next non-empty line is a code fence
+        if (nextNonEmptyLine && nextNonEmptyLine.match(/^```/)) {
+          // Add new code fence after the existing one
+          const codeFence = Array.from(urls).map(url => convertUrlToApiCallCodeFence(url)).join("\n");
+          lines.splice(nextNonEmptyLineIndex + 1, 0, codeFence);
+        } else {
+          // Add new code fence immediately after the current line
+          const codeFence = Array.from(urls).map(url => convertUrlToApiCallCodeFence(url)).join("\n");
+          return [line, codeFence].join("\n");
+        }
+      }
+      return line;
     }
     return line;
   });
   fs.writeFileSync(output, lines.join("\n"));
 }
+
+
 
 function capitalize(entity: string) {
   return entity.charAt(0).toUpperCase() + entity.slice(1);
