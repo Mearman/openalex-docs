@@ -352,7 +352,7 @@ function convertApiUrlsToApiCalls(
 function findInsertionIndex(
 	currentIndex: number,
 	lines: string[],
-	linesAddedSoFar: number
+	offset: number
 ) {
 	let inCodeFence = false;
 	let codeFenceEndIndex = currentIndex;
@@ -375,14 +375,14 @@ function findInsertionIndex(
 	if (inCodeFence) {
 		for (let i = codeFenceEndIndex; i < lines.length; i++) {
 			if (lines[i].trim() === "```") {
-				return i + 1 + linesAddedSoFar; // Adjusted for added lines
+				return i + 1 + offset;
 			}
 		}
 	} else if (isMarkdownLineBreak) {
-		return currentIndex + 2 + linesAddedSoFar; // Skip the next line as well due to Markdown line break
+		return currentIndex + 2 + offset
 	}
 
-	return currentIndex + 1 + linesAddedSoFar; // Adjusted for added lines
+	return currentIndex + 1 + offset;
 }
 
 function capitalize(entity: string) {
