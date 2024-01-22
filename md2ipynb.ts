@@ -230,9 +230,7 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
     "```"
   ].join("\n");;
 
-  if (!file.includes(pipCommand)) {
-    lines.unshift(pipInstallCodeFence); // Add at the start if not present
-  }
+  let apiCallModified = false; // Flag to track if any API call is modified or added
 
   let linesAddedSoFar = 0;
 
@@ -240,16 +238,22 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
     const urls = [...new Set(line.match(/https:\/\/api.openalex.org\/[a-z]+[^)\s'\]\(`'"]+/gi)?.map(url => url.replace(/\\_/g, "_").replace(/\\&/g, "&")))];
 
     if (urls.length > 0) {
+      apiCallModified = true; // Set flag to true as an API call is modified or added
       const codeFences = urls.map(url => convertUrlToApiCallCodeFence(url));
       codeFences.forEach(codeFence => {
         if (!file.includes(codeFence)) {
           const insertionIndex = findInsertionIndex(i, lines, linesAddedSoFar);
           lines.splice(insertionIndex, 0, ...codeFence.split("\n"));
-          linesAddedSoFar += codeFence.split("\n").length; // Update the count of added lines
+          linesAddedSoFar += codeFence.split("\n").length;
         }
       });
     }
   });
+
+  // Add pip install code fence only if an API call has been modified or added
+  if (apiCallModified && !file.includes(pipCommand)) {
+    lines.unshift(pipInstallCodeFence);
+  }
 
   const updatedContent = lines.join("\n");
   if (originalContent !== updatedContent) {
@@ -258,6 +262,7 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
     console.log("No changes made");
   }
 }
+
 function findInsertionIndex(currentIndex: number, lines: string[], linesAddedSoFar: number) {
   let inCodeFence = false;
   let codeFenceEndIndex = currentIndex;
