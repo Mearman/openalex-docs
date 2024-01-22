@@ -214,7 +214,7 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
   let lines = file.split("\n");
   const originalContent = file; // Save original content for comparison
 
-  const pipCommand = `%pip install --upgrade --no-cache-dir "git+https://github.com/Mearman/openalex-python.git"`;
+  const pipCommand = `%pip install --upgrade "git+https://github.com/Mearman/openalex-python.git"`;
   const entities = [
     "authors",
     "concepts",
