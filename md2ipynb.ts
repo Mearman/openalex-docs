@@ -331,6 +331,7 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
   } else {
     console.log("No changes made");
   }
+  fs.unlinkSync(input.toString());
 }
 
 function findInsertionIndex(currentIndex: number, lines: string[], linesAddedSoFar: number) {
