@@ -255,7 +255,7 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
   const branch = "main";
   let ipynbFilename = input.toString().replace(/\.md$/, ".ipynb").replace(/^\.\//, "");
 
-  const colabLink = `[![Open All Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/${owner}/${repo}/blob/main/${ipynbFilename})`;
+  const colabLink = `[![Open All Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/${owner}/${repo}/blob/${branch}/${ipynbFilename})`;
   const pipInstallCodeFence = [
     colabLink,
     "```python",
