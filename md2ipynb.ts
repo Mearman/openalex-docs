@@ -1,6 +1,6 @@
 #!/usr/bin/env npx -y tsx
 import * as fs from "fs";
-
+import * as path from "path";
 // Define the structure of a Jupyter Notebook cell
 interface BaseNotebookCell {
 	cell_type: "markdown" | "code";
@@ -157,14 +157,15 @@ export function main() {
 	recursivelyProcessFilesInDir(
 		".",
 		/^(?!.*node_modules).*\.md$/,
-		(path: fs.PathLike, content: string) => {
+		(filepath: fs.PathLike, content: string) => {
 			const markdownWithoutHeaders = removeYamlHeaders(content);
-			const markdownWithApiCalls = convertApiUrlsToApiCalls(markdownWithoutHeaders, path);
+			const markdownWithApiCalls = convertApiUrlsToApiCalls(markdownWithoutHeaders, path.relative(__dirname, filepath.toString()));
 			const contentHasUpdated: boolean = content !== markdownWithApiCalls;
 			const markdownWithRelativeLinks = makeLinksRelative(markdownWithApiCalls);
-			const notebook = convertMarkdownToJupyterNotebook(markdownWithRelativeLinks);
+			const markdownWithIpynbLinks = updateMdLinksToIpynb(markdownWithRelativeLinks, path.dirname(filepath.toString()), fs.existsSync);
+			const notebook = convertMarkdownToJupyterNotebook(markdownWithIpynbLinks);
 
-			const output = path
+			const output = filepath
 				.toString()
 				.replace(/(\.[a-z0-9]+)+$/i, ".ipynb")
 				.replace(/^\.\//, "");
@@ -186,6 +187,7 @@ function recursivelyProcessFilesInDir(
 	match: RegExp,
 	fn: (path: fs.PathLike, content: string) => any
 ) {
+	dir = path.resolve(dir);
 	console.log();
 	console.log(`Processing ${dir}`);
 	const files = fs.readdirSync(dir);
@@ -408,6 +410,55 @@ function makeLinksRelative(conctent: string): string {
 
 			// Return the modified link
 			return `[${text}](${url})`;
+		});
+	}).join("\n");
+}
+
+// type FileExistenceChecker = (path: string) => boolean;
+type FileExistenceChecker = typeof fs.existsSync;
+
+// function updateMdLinksToIpynb(content: string, fileExists: FileExistenceChecker = fs.existsSync): string {
+// 	const lines = content.split("\n");
+// 	const mdLinkRegex = /\[([^\]]+)\]\(([^)]+\.md)\)/g;
+
+// 	return lines.map(line => {
+// 		return line.replace(mdLinkRegex, (match, text, mdPath) => {
+// 			const ipynbPath = mdPath.replace(/\.md$/, '.ipynb');
+
+// 			// Check if the .ipynb file exists
+// 			if (fileExists(ipynbPath)) {
+// 				// Update the link to point to the .ipynb file
+// 				return `[${text}](${ipynbPath})`;
+// 			}
+
+// 			// If .ipynb file does not exist, keep the .md link
+// 			return match;
+// 		});
+// 	}).join("\n");
+// }
+
+
+function updateMdLinksToIpynb(content: string, baseDir: string, fileExists: FileExistenceChecker = fs.existsSync): string {
+	const mdLinkRegex = /\[([^\]]+)\]\(([^)]+\.md)\)/g;
+	const lines = content.split("\n");
+
+	return lines.map(line => {
+		return line.replace(mdLinkRegex, (match, text, mdPath) => {
+			// Resolve the path of the .md file relative to the base directory
+			const resolvedMdPath = path.resolve(baseDir, mdPath);
+			// Replace .md with .ipynb in the resolved path
+			const ipynbPath = resolvedMdPath.replace(/\.md$/, '.ipynb');
+
+			// Check if the .ipynb file exists
+			if (fileExists(ipynbPath)) {
+				// Update the link to point to the .ipynb file
+				// You might need to adjust the path format based on how you want to use it
+				const relativeIpynbPath = ipynbPath.substring(path.dirname(baseDir).length + 1);
+				return `[${text}](${relativeIpynbPath})`;
+			}
+
+			// If .ipynb file does not exist, keep the .md link
+			return match;
 		});
 	}).join("\n");
 }
