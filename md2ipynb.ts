@@ -172,7 +172,7 @@ function recursivelyProcessFilesInDir(dir: string, match: RegExp, outputFilename
     if (stat.isDirectory()) {
       recursivelyProcessFilesInDir(path, match, outputFilename, fn);
     } else if (stat.isFile() && file.match(match)) {
-      const output = `${path.replace(/(.[a-z0-9]+)+$/i, "")}${outputFilename}`;
+      const output = `${path.replace(/(\.[a-z0-9]+)+$/i, "")}${outputFilename}`;
       fn(path, output);
     }
   }
