@@ -162,7 +162,7 @@ export function main() {
 			const markdownWithApiCalls = convertApiUrlsToApiCalls(markdownWithoutHeaders, path.relative(__dirname, filepath.toString()));
 			const contentHasUpdated: boolean = content !== markdownWithApiCalls;
 			const markdownWithRelativeLinks = makeLinksRelative(markdownWithApiCalls);
-			const markdownWithIpynbLinks = updateMdLinksToIpynb(markdownWithRelativeLinks, path.dirname(filepath.toString()), fs.existsSync);
+			const markdownWithIpynbLinks = updateMdLinksToIpynb(markdownWithRelativeLinks, filepath, fs.existsSync);
 			const notebook = convertMarkdownToJupyterNotebook(markdownWithIpynbLinks);
 
 			const output = filepath
@@ -438,22 +438,22 @@ type FileExistenceChecker = typeof fs.existsSync;
 // }
 
 
-function updateMdLinksToIpynb(content: string, baseDir: string, fileExists: FileExistenceChecker = fs.existsSync): string {
+function updateMdLinksToIpynb(content: string, sourceFile: fs.PathLike, fileExists: FileExistenceChecker = fs.existsSync): string {
 	const mdLinkRegex = /\[([^\]]+)\]\(([^)]+\.md)\)/g;
 	const lines = content.split("\n");
+	const baseDir = path.dirname(sourceFile.toString());
 
 	return lines.map(line => {
 		return line.replace(mdLinkRegex, (match, text, mdPath) => {
-			// Resolve the path of the .md file relative to the base directory
-			const resolvedMdPath = path.resolve(baseDir, mdPath);
-			// Replace .md with .ipynb in the resolved path
-			const ipynbPath = resolvedMdPath.replace(/\.md$/, '.ipynb');
+			// Construct the absolute path for the .md file
+			const absoluteMdPath = path.join(baseDir, mdPath);
+			// Construct the absolute path for the corresponding .ipynb file
+			const absoluteIpynbPath = absoluteMdPath.replace(/\.md$/, '.ipynb');
 
 			// Check if the .ipynb file exists
-			if (fileExists(ipynbPath)) {
-				// Update the link to point to the .ipynb file
-				// You might need to adjust the path format based on how you want to use it
-				const relativeIpynbPath = ipynbPath.substring(path.dirname(baseDir).length + 1);
+			if (fileExists(absoluteIpynbPath)) {
+				// Construct the relative path for the .ipynb file
+				const relativeIpynbPath = mdPath.replace(/\.md$/, '.ipynb');
 				return `[${text}](${relativeIpynbPath})`;
 			}
 
