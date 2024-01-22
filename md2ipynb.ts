@@ -301,35 +301,34 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
 
   const filteredMatches: Match[] = matches.filter(Boolean) as Match[];
 
-  if (filteredMatches.length == 0) {
-    console.log("No matches");
-    return;
-  }
-  let offset = 0;
-  filteredMatches.forEach(({ line, urls, i }) => {
-    if (urls.length > 0) {
-      const codeFences = urls.map(({ code }) => code);
-      codeFences.forEach(codeFence => {
-        if (!file.includes(codeFence)) {
-          const insertionIndex = findInsertionIndex(i, lines, offset);
-          lines.splice(insertionIndex, 0, ...codeFence.split("\n"));
-          offset += codeFence.split("\n").length;
-          apiCallModified = true;
-        }
-      });
+  if (filteredMatches.length > 0) {
+
+    let offset = 0;
+    filteredMatches.forEach(({ line, urls, i }) => {
+      if (urls.length > 0) {
+        const codeFences = urls.map(({ code }) => code);
+        codeFences.forEach(codeFence => {
+          if (!file.includes(codeFence)) {
+            const insertionIndex = findInsertionIndex(i, lines, offset);
+            lines.splice(insertionIndex, 0, ...codeFence.split("\n"));
+            offset += codeFence.split("\n").length;
+            apiCallModified = true;
+          }
+        });
+      }
+    });
+
+    // Add pip install code fence only if an API call has been modified or added
+    if (apiCallModified && !file.includes(pipCommand)) {
+      lines.unshift(pipInstallCodeFence);
     }
-  });
 
-  // Add pip install code fence only if an API call has been modified or added
-  if (apiCallModified && !file.includes(pipCommand)) {
-    lines.unshift(pipInstallCodeFence);
-  }
-
-  const updatedContent = lines.join("\n");
-  if (originalContent !== updatedContent) {
-    fs.writeFileSync(output, updatedContent);
-  } else {
-    console.log("No changes made");
+    const updatedContent = lines.join("\n");
+    if (originalContent !== updatedContent) {
+      fs.writeFileSync(output, updatedContent);
+    } else {
+      console.log("No changes made");
+    }
   }
   fs.unlinkSync(input.toString());
 }
