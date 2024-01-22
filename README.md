@@ -1,3 +1,4 @@
+[![Open All Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Mearman/openalex-docs/blob/main/quickstart-tutorial.ipynb)
 # Overview
 
 <figure><img src=".gitbook/assets/openalex_logo_text_transparent_20240117.png" alt="" width="563"><figcaption></figcaption></figure>
