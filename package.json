@@ -1,0 +1,38 @@
+{
+  "author": "",
+  "description": "<figure><img src=\".gitbook/assets/openalex_logo_text_transparent_20240117.png\" alt=\"\" width=\"563\"><figcaption></figcaption></figure>",
+  "devDependencies": {
+    "wireit": "^0.14.3"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "main": "index.js",
+  "name": "openalex-docs",
+  "scripts": {
+    "build": "wireit",
+    "serve": "wireit",
+    "md2ipynb": "ts-node ./md2ipynb.ts"
+  },
+  "version": "1.0.0",
+  "wireit": {
+    "install": {
+      "command": "gitbook install"
+    },
+    "build": {
+      "dependencies": [
+        "install"
+      ],
+      "command": "gitbook build"
+    },
+    "serve": {
+      "command": "gitbook serve",
+      "dependencies": [
+        "build"
+      ]
+    }
+  },
+  "dependencies": {
+    "@gitbook-ng/gitbook": "^3.3.6",
+    "gitbook-plugin-hints": "^1.0.2"
+  }
+}
