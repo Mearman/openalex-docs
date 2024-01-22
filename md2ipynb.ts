@@ -82,7 +82,10 @@ function convertMarkdownToJupyterNotebook(
 					source: segment.split("\n"),
 				};
 			}
-		})
+		}).map((cell) => ({
+			...cell,
+			source: cell.source.join("\n").trim().split("\n")
+		}))
 		.filter((cell) => {
 			if (!removeCells) {
 				return true;
@@ -105,10 +108,6 @@ function convertMarkdownToJupyterNotebook(
 					return true;
 				}
 			});
-			return cell;
-		})
-		.map((cell) => {
-			cell.source = cell.source.map((line) => line + "\n");
 			return cell;
 		});
 
