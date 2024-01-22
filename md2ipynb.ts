@@ -11,6 +11,7 @@ interface BaseNotebookCell {
 
 interface CodeCell extends BaseNotebookCell {
   cell_type: "code";
+  execution_count: number | null;
   outputs: any[];
 }
 
@@ -63,6 +64,7 @@ function convertMarkdownToJupyterNotebook(
           metadata: {},
           source: segment.replace(/```python\n|```/g, "").split("\n"),
           outputs: [],
+          execution_count: null,
         };
       } else if (segment.startsWith("```bash") || segment.startsWith("```sh")) {
         return {
@@ -72,6 +74,7 @@ function convertMarkdownToJupyterNotebook(
             segment.replace(/```(?:bash|sh)\n|```/g, "").split("\n")
           ),
           outputs: [],
+          execution_count: null,
         };
       } else {
         return {
