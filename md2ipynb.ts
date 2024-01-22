@@ -277,9 +277,11 @@ function convertApiUrlsToApiCalls(
 		.replace(/(\.[a-z0-9]+)+$/i, ".ipynb")
 		.replace(/^\.\//, "");
 
-	const colabLink = `[![Open All Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/${owner}/${repo}/blob/${branch}/${ipynbFilename})`;
+	const colabLink = `[![Open in Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/${owner}/${repo}/blob/${branch}/${ipynbFilename})`;
+	const githubLink = `[![Open in GitHub](https://img.shields.io/badge/-Open%20in%20GitHub-black?logo=github)](https://github.com/${owner}/${repo}/blob/${branch}/${ipynbFilename})`;
+
 	const pipInstallCodeFence = [
-		colabLink,
+		githubLink + colabLink,
 		"```python",
 		pipCommand,
 		"```",
