@@ -158,19 +158,18 @@ export function main() {
 		".",
 		/^(?!.*node_modules).*\.md$/,
 		(path: fs.PathLike, content: string) => {
-			const original = content;
-			content = removeYamlHeaders(content);
-
-			content = convertApiUrlsToApiCalls(content, path);
-
-			const notebook = convertMarkdownToJupyterNotebook(content);
+			const markdownWithoutHeaders = removeYamlHeaders(content);
+			const markdownWithApiCalls = convertApiUrlsToApiCalls(markdownWithoutHeaders, path);
+			const contentHasUpdated: boolean = content !== markdownWithApiCalls;
+			const markdownWithRelativeLinks = makeLinksRelative(markdownWithApiCalls);
+			const notebook = convertMarkdownToJupyterNotebook(markdownWithRelativeLinks);
 
 			const output = path
 				.toString()
 				.replace(/(\.[a-z0-9]+)+$/i, ".ipynb")
 				.replace(/^\.\//, "");
 
-			if (content !== original) {
+			if (contentHasUpdated) {
 				fs.writeFileSync(output, JSON.stringify(notebook, null, 2));
 			}
 			return notebook;
@@ -374,4 +373,29 @@ function findInsertionIndex(
 
 function capitalize(entity: string) {
 	return entity.charAt(0).toUpperCase() + entity.slice(1);
+}
+
+function makeLinksRelative(conctent: string): string {
+	const lines = conctent.split("\n");
+	const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+
+	return lines.map(line => {
+		return line.replace(linkRegex, (match, text, url) => {
+			// Check if the link is a document link (not starting with http:// or https://)
+			if (!/^https?:\/\//.test(url)) {
+				// Prepend "./" if it's not there
+				if (!url.startsWith("./")) {
+					url = "./" + url;
+				}
+
+				// Append "README.md" if the link ends with "/"
+				if (url.endsWith("/")) {
+					url += "README.md";
+				}
+			}
+
+			// Return the modified link
+			return `[${text}](${url})`;
+		});
+	}).join("\n");
 }
