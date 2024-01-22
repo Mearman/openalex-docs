@@ -276,9 +276,13 @@ function convertApiUrlsToApiCalls(
 		.toString()
 		.replace(/(\.[a-z0-9]+)+$/i, ".ipynb")
 		.replace(/^\.\//, "");
-	const repoRootLink = `[![Repository](https://img.shields.io/badge/-Repository-black?logo=github)](https://github.com/${owner}/${repo})`;
-	const colabLink = `[![Open in Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/${owner}/${repo}/blob/${branch}/${ipynbFilename})`;
-	const githubLink = `[![Open in GitHub](https://img.shields.io/badge/-Open%20in%20GitHub-black?logo=github)](https://github.com/${owner}/${repo}/blob/${branch}/${ipynbFilename})`;
+
+	const repoRootLink = `[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=GitHub&link=https://github.com/${owner}/${repo})](https://github.com/${owner}/${repo})`;
+
+	const githubLink = `[![Open in GitHub](https://img.shields.io/badge/Open%20in-GitHub-181717?style=for-the-badge&logo=github&link=https://github.com/${owner}/${repo}/blob/${branch}/${ipynbFilename})](https://github.com/${owner}/${repo}/blob/${branch}/${ipynbFilename})`;
+
+	const colabLink = `[![Open in Colab](https://img.shields.io/badge/Open%20in-Colab-F9AB00?style=for-the-badge&logo=Google%20Colab&link=https://colab.research.google.com/github/${owner}/${repo}/blob/${branch}/${ipynbFilename})](https://colab.research.google.com/github/${owner}/${repo}/blob/${branch}/${ipynbFilename})`;
+
 
 	const pipInstallCodeFence = [
 		repoRootLink + githubLink + colabLink,
