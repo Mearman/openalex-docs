@@ -197,15 +197,6 @@ function convertUrlToApiCallCodeFence(url: string) {
   }
   const codeFence = [
     "```python",
-    // `# ${url}`,
-    `from openalex_api import ${apiClass}, Configuration`,
-    "",
-    `${apiInstance} = ${apiClass}(`,
-    "\tConfiguration(",
-    `\t\thost="https://api.openalex.org"`,
-    `\t)`,
-    `)`,
-    "",
     `response = ${apiInstance}.${call}(`,
     `\t${params.map(({ key, value }) => `${key}="${value}"`).join(",\n\t")}`,
     ")",
@@ -224,10 +215,25 @@ function convertApiUrlsToApiCalls(input: PathLike, output: PathLike) {
   const originalContent = file; // Save original content for comparison
 
   const pipCommand = `%pip install --upgrade --no-cache-dir "git+https://github.com/Mearman/openalex-python.git"`;
+  const entities = [
+    "authors",
+    "concepts",
+    "funders",
+    "institutions",
+    "publishers",
+    "sources",
+    "works",
+  ]
   const pipInstallCodeFence = [
     "```python",
     pipCommand,
-    "```"
+    "```",
+    "```python",
+    "from openalex_api import Configuration, " + entities.map(e => `${capitalize(e)}Api`).join(", "),
+    "",
+    `configuration = Configuration(host="https://api.openalex.org")`,
+    entities.map(e => `${e}_api = ${capitalize(e)}Api(configuration)`).join("\n"),
+    "```",
   ].join("\n");;
 
   let apiCallModified = false; // Flag to track if any API call is modified or added
