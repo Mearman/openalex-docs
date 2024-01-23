@@ -1,4 +1,4 @@
-[![Open All Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Mearman/openalex-docs/blob/main/quickstart-tutorial.ipynb)
+[![Open in Colab](https://img.shields.io/badge/Open%20in-Colab-F9AB00?style=for-the-badge&logo=Google%20Colab&link=https://colab.research.google.com/github/Mearman/openalex-docs/blob/main/quickstart-tutorial.ipynb)](https://colab.research.google.com/github/Mearman/openalex-docs/blob/main/quickstart-tutorial.ipynb)
 # Overview
 
 <figure><img src=".gitbook/assets/openalex_logo_text_transparent_20240117.png" alt="" width="563"><figcaption></figcaption></figure>
