@@ -247,24 +247,27 @@ function convertUrlToApiCallCodeFence(url: string) {
     ")",
     "",
     // "print(json.dumps(response.to_dict(), indent=2))",
-    "display(pd.DataFrame(response.results))",
+    // if there is a results object that is the primary df, if not use the response
+    `if hasattr(response, "results"):`,
+    `\tdf = pd.DataFrame(response.results)`,
+    `else:`,
+    `\tdf = pd.DataFrame(response).T.rename(columns=lambda x: x[0]).drop(0).set_index('id')`,
+    `display(df)`,
     "```",
-    "```python",
-    // try and read value for openapi_token , error if nullish
-    `try:`,
-    `\tprint(openapi_token)`,
-    `except:`,
-    `\traise Exception("Please provide an openapi_token")`,
-    "",
-    "df = pd.DataFrame(response.results)",
-    // parse and select all numeric columns
-    `numeric_df = df.select_dtypes(include=[np.number])`,
-    `display(numeric_df)`,
-    "",
-    `llm = OpenAI(api_token=openapi_token)`,
-    `sdf = SmartDataframe(numeric_df, config={"llm": llm})`,
-    `sdf.chat("Plot a chart of this data")`,
 
+    "```python",
+    `numeric_df = df[['id', 'display_name'] +`,
+    `\t[col for col in df.columns if df[col].dtype in ['int64', 'float64'] and col != 'relevance_score']]`,
+    `display(numeric_df)`,
+    "```",
+
+    "```python",
+    `try:`,
+    `\tllm = OpenAI(api_token = openapi_token)`,
+    `\tsdf = SmartDataframe(numeric_df, config = { "llm": llm })`,
+    `\tsdf.chat("Plot a chart of this data")`,
+    `except:`,
+    `\tprint("Error when creating SmartDataframe")`,
     "```",
   ].join("\n");
   console.log(codeFence);
@@ -327,14 +330,13 @@ function convertApiUrlsToApiCalls(
     entities
       .map((e) => `${e}_api = ${capitalize(e)}Api(ApiClient(configuration))`)
       .join("\n"),
-    "```",
-
-    "```python",
+    "",
     "from pandasai import SmartDataframe",
     "from pandasai.llm import OpenAI",
     "```",
 
     "```python",
+    `# @title  { run: "auto", display-mode: "form" }`,
     `openapi_token = "" # @param {type:"string"}`,
     "```",
   ].join("\n");
