@@ -246,7 +246,8 @@ function convertUrlToApiCallCodeFence(url: string) {
 			.join(",\n\t")}`,
 		")",
 		"",
-		"print(json.dumps(response.to_dict(), indent=2))",
+    // "print(json.dumps(response.to_dict(), indent=2))",
+    "display(pd.DataFrame(response.results))",
 		"```",
 	].join("\n");
 	console.log(codeFence);
@@ -297,6 +298,7 @@ function convertApiUrlsToApiCalls(
 		pipCommand,
 		"```",
 		"```python",
+    "import pandas as pd",
 		"import json",
 		"from openalex_api import Configuration, ApiClient," +
 		entities.map((e) => `${capitalize(e)}Api`).join(", "),
