@@ -252,14 +252,18 @@ function convertUrlToApiCallCodeFence(url: string) {
     "```python",
     // try and read value for openapi_token , error if nullish
     `try:`,
-    `\topenapi_token`,
-    `\tif openapi_token:`,
-    `\t\tllm = OpenAI(token=openapi_token)`,
-    "\tdf = pd.DataFrame(response.results)",
-    `\tsdf = SmartDataframe(df, config={"llm": llm})`,
-    `\tsdf.chat("Plot a chart of this data")`,
+    `\tprint(openapi_token)`,
     `except:`,
     `\traise Exception("Please provide an openapi_token")`,
+    "",
+    "df = pd.DataFrame(response.results)",
+    // parse and select all numeric columns
+    `numeric_df = df.select_dtypes(include=[np.number])`,
+    `display(numeric_df)`,
+    "",
+    `llm = OpenAI(api_token=openapi_token)`,
+    `sdf = SmartDataframe(numeric_df, config={"llm": llm})`,
+    `sdf.chat("Plot a chart of this data")`,
 
     "```",
   ].join("\n");
@@ -315,6 +319,7 @@ function convertApiUrlsToApiCalls(
     "```python",
     "import json",
     "import pandas as pd",
+    "import numpy as np",
     "from openalex_api import Configuration, ApiClient," +
     entities.map((e) => `${capitalize(e)}Api`).join(", "),
     "",
