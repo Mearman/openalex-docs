@@ -315,7 +315,7 @@ function convertApiUrlsToApiCalls(
     "```python",
     "import json",
     "import pandas as pd",
-    "from openalex_api_pydantic_v1 import Configuration, ApiClient," +
+    "from openalex_api import Configuration, ApiClient," +
     entities.map((e) => `${capitalize(e)}Api`).join(", "),
     "",
     `configuration = Configuration(host="https://api.openalex.org")`,
