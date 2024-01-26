@@ -267,7 +267,7 @@ function convertApiUrlsToApiCalls(
 	let lines = markdown.split("\n");
 	const originalContent = markdown; // Save original content for comparison
 
-	const pipCommand = `%pip install --upgrade "git+https://github.com/Mearman/openalex-python.git"`;
+  const pipCommand = `%pip install --upgrade "git+https://github.com/Mearman/openalex-python-pydantic-v1.git"`;
 	const entities = [
 		"authors",
 		"concepts",
