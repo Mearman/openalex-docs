@@ -17,30 +17,47 @@ export function findInsertionIndex(
   }
 
   // Check for multi-line code fences
-  let inCodeFence = false;
+
+  // check for an odd number of code fences before the current line
+  let numCodeFencesBefore = 0;
   for (let i = matchedLine; i >= 0; i--) {
-    if (lines[i].trim() === "```") {
-      inCodeFence = !inCodeFence;
-      if (!inCodeFence) {
-        // Found the start of the multi-line code fence; break
-        break;
-      }
+    if (lines[i].trim().match(/^```/)) {
+      numCodeFencesBefore++;
     }
   }
-
-  if (inCodeFence) {
-    // Find the end of the multi-line code fence
-    for (let i = matchedLine; i < lines.length; i++) {
-      if (lines[i].trim() === "```") {
-        return {
-          lines: newLines,
-          index: i + 1 - newLines.length // Insert before the end of the multi-line code fence}
-        }
-      }
+  if (numCodeFencesBefore % 2 === 1) {
+    // The current line is inside a multi-line code fence; insert after it
+    return {
+      lines: newLines, index: matchedLine + 1
     }
-  } else if (isMarkdownLineBreak) {
-    return {lines: newLines, index: matchedLine + 2}
   }
+  // let inCodeFence = false;
+  // for (let i = matchedLine; i >= 0; i--) {
+  //   if (lines[i].trim() === "```") {
+  //     inCodeFence = !inCodeFence;
+  //     if (!inCodeFence) {
+  //       // Found the start of the multi-line code fence; break
+  //       break;
+  //     }
+  //   }
+  // }
 
-  return {lines: newLines, index: matchedLine + 1}
+  // if (inCodeFence) {
+  //   // Find the end of the multi-line code fence
+  //   for (let i = matchedLine; i < lines.length; i++) {
+  //     if (lines[i].trim() === "```") {
+  //       return {
+  //         lines: newLines,
+  //         index: i + 1  // Insert before the end of the multi-line code fence}
+  //       }
+  //     }
+  //   }
+  // } else if (isMarkdownLineBreak) {
+  //   return {lines: newLines, index: matchedLine + 2}
+  // }
+
+  return {
+    lines: newLines,
+    index: matchedLine + 1
+  };
 }
