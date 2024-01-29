@@ -224,9 +224,20 @@ function convertUrlToApiCallCodeFence(url: string) {
   const pathname = typedUrl.pathname;
   const entity = pathname.split("/")[1];
   const id: string | undefined = pathname.split("/")[2];
-  const searchParams = typedUrl.searchParams;
-  const params: { key: string; value: string; }[] = Array.from(searchParams).map(
-    ([key, value]) => ({ key, value })
+  const searchParams: URLSearchParams = typedUrl.searchParams;
+  const searchParamsArray: { key: string; value: string; }[] = Array.from(searchParams).map(([key, value]) => ({ key, value }));
+
+  const params: { key: string; value: string | number | boolean; }[] = searchParamsArray.map(
+    ({ key: value }:{ key: string; value: string | number | boolean; }): { key: string; value: string | number | boolean; } => {
+      // if value is parsed as a number, return a number
+      if (!isNaN(Number(value))) {
+        value = Number(value);
+      }
+      return ({
+        key: key.replace("-", "_"),
+        value: value
+      });
+    }
   );
 
   const apiInstance = `${entity}_api`;
@@ -242,7 +253,7 @@ function convertUrlToApiCallCodeFence(url: string) {
     "```python",
     `response = ${apiInstance}.${call}(`,
     `\t${params
-      .map(({ key, value }) => `${key.replace("-", "_")}="${value}"`)
+      .map(({ key, value }) => `${key}="${value}"`)
       .join(",\n\t")}`,
     ")",
     "",
