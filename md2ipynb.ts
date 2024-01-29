@@ -258,6 +258,8 @@ function convertUrlToApiCallCodeFence(url: string) {
   }
   const codeFence = [
     "```python",
+    // original url as comment
+    `# ${url}`,
     `response = ${apiInstance}.${call}(`,
     `\t${params
       .map(({ key, value }) => `${key}="${value}"`)
