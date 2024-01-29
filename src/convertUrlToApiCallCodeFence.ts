@@ -41,6 +41,7 @@ export function convertUrlToApiCallCodeFence(url: string) {
   }
 
 
+  const groupByQuery = params.some(({ key }) => key === "group_by");
   // add the id to the call args if it exists
   const codeFence = [
     "```python",
@@ -67,7 +68,11 @@ export function convertUrlToApiCallCodeFence(url: string) {
         // "# transpose the single result into a dataframe",
         `df = pd.DataFrame(response).T.rename(columns=lambda x: x[0]).drop(0).set_index('id')`,
       ] : [
-        `df = pd.DataFrame(response.results)`,
+        groupByQuery ? [
+          `df = pd.DataFrame(response.group_by)`,
+        ] : [
+          `df = pd.DataFrame(response.results)`,
+        ],
       ]),
     `display(df)`,
     // "```",
@@ -77,8 +82,12 @@ export function convertUrlToApiCallCodeFence(url: string) {
       singularCall ? [] : [
         "```",
         "```python",
-        `numeric_df = df[['id', 'display_name'] +`,
-        `\t[col for col in df.columns if df[col].dtype in ['int64', 'float64'] and col != 'relevance_score']]`,
+        ...groupByQuery ? [
+          `numeric_df = df.set_index('key')`,
+        ] : [
+          `numeric_df = df[['id', 'display_name'] +`,
+          `\t[col for col in df.columns if df[col].dtype in ['int64', 'float64'] and col != 'relevance_score']]`,
+        ],
         `display(numeric_df)`,
         "```",
         "```python",
