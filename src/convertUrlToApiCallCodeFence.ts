@@ -48,9 +48,18 @@ export function convertUrlToApiCallCodeFence(url: string) {
     "```python",
     // original url as comment
     `# ${url}`,
+    `${params
+      // group_by = 0 # @param {type:"integer"}
+      .map(({ key, value }) => `${key}="${value}" # @param ${getPythonType(key, value)}`)
+      .join(",\n\t")}`,
+    "",
     `response = ${apiInstance}.${call}(`,
+    // `\t${params
+    //   .map(({ key, value }) => `${key}="${value}"`)
+    //   .join(",\n\t")}`,
+    // ")",
     `\t${params
-      .map(({ key, value }) => `${key}="${value}"`)
+      .map(({ key, value }) => `${key}=${key}`)
       .join(",\n\t")}`,
     ")",
     "",
@@ -86,3 +95,26 @@ export function convertUrlToApiCallCodeFence(url: string) {
   console.log(codeFence);
   return codeFence;
 }
+function getPythonType(key, value: string | number | boolean) {
+  let paramType;
+  if (typeof value === "string") {
+    paramType = "string";
+  } else if (typeof value === "number") {
+    if (Number.isInteger(value)) {
+      paramType = "integer";
+    } else {
+      paramType = "number";
+    }
+  } else if (typeof value === "boolean") {
+    paramType = "boolean";
+  } else {
+    paramType = "string";
+  }
+
+  if (paramType === "string") {
+    value = `"${value}"`;
+  }
+  const output = `${value} {type: "${paramType}"}`;
+  return output;
+}
+
