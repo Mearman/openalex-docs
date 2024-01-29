@@ -8,7 +8,8 @@ export function convertMarkdownToJupyterNotebook(
 ): JupyterNotebook {
   const segments = markdown
     .trim()
-    .split(/(```(?:python|bash|sh)\n[\s\S]*?\n```)/g);
+    .replace(/\\\s/g, "\n")
+    .split(/(```(?:python|bash|sh)\n[\s\S]*?\n```)/g)
 
   const cells = segments
     .map((segment): NotebookCell => {
