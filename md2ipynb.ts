@@ -276,17 +276,16 @@ function convertUrlToApiCallCodeFence(url: string) {
       .join(",\n\t")}`,
     ")",
     "",
+    `if hasattr(response, "results"):`,
+    `\tdf = pd.DataFrame(response.results)`,
+    `else:`,
+    `\tdf = pd.DataFrame(response).T.rename(columns=lambda x: x[0]).drop(0).set_index('id')`,
+    `display(df)`,
+    "```",
     // "print(json.dumps(response.to_dict(), indent=2))",
     // if there is a results object that is the primary df, if not use the response
     ...(
-      singularCall ? [
-        `if hasattr(response, "results"):`,
-        `\tdf = pd.DataFrame(response.results)`,
-        `else:`,
-        `\tdf = pd.DataFrame(response).T.rename(columns=lambda x: x[0]).drop(0).set_index('id')`,
-        `display(df)`,
-        "```",
-
+      singularCall ? [] : [
         "```python",
         `numeric_df = df[['id', 'display_name'] +`,
         `\t[col for col in df.columns if df[col].dtype in ['int64', 'float64'] and col != 'relevance_score']]`,
@@ -301,7 +300,7 @@ function convertUrlToApiCallCodeFence(url: string) {
         `except:`,
         `\tprint("Error when creating SmartDataframe")`,
         "```",
-      ] : [])
+      ])
   ].join("\n");
   console.log(codeFence);
   return codeFence;
