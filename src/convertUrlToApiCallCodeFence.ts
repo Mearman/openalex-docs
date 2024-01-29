@@ -52,7 +52,7 @@ export function convertUrlToApiCallCodeFence(url: string) {
     `${params
       // group_by = 0 # @param {type:"integer"}
       .map(({ key, value }) => `${key}="${value}" # @param ${getPythonType(key, value)}`)
-      .join(",\n\t")}`,
+      .join(",\n")}`,
     "",
     `response = ${apiInstance}.${call}(`,
     // `\t${params
