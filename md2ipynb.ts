@@ -250,12 +250,22 @@ function convertUrlToApiCallCodeFence(url: string) {
   const apiInstance = `${entity}_api`;
 
   // drop the s from the call if there is an id
-  const call = id ? `get_${entity.slice(0, -1)}` : `get_${entity}`;
+  // let call = id ? `get_${entity.slice(0, -1)}` : `get_${entity}`;
+  let call;
+  let singularCall = false;
+  if (entity === "autocomplete") {
+    call = `get_${entity}_${id}`;
+  } else {
+    call = id ? `get_${entity.slice(0, -1)}` : `get_${entity}`;
+    if (id) {
+      params.push({ key: "id", value: id });
+      singularCall = true;
+    }
+  }
+
 
   // add the id to the call args if it exists
-  if (id) {
-    params.push({ key: "id", value: id });
-  }
+
   const codeFence = [
     "```python",
     // original url as comment
@@ -268,27 +278,30 @@ function convertUrlToApiCallCodeFence(url: string) {
     "",
     // "print(json.dumps(response.to_dict(), indent=2))",
     // if there is a results object that is the primary df, if not use the response
-    `if hasattr(response, "results"):`,
-    `\tdf = pd.DataFrame(response.results)`,
-    `else:`,
-    `\tdf = pd.DataFrame(response).T.rename(columns=lambda x: x[0]).drop(0).set_index('id')`,
-    `display(df)`,
-    "```",
+    ...(
+      singularCall ? [
+        `if hasattr(response, "results"):`,
+        `\tdf = pd.DataFrame(response.results)`,
+        `else:`,
+        `\tdf = pd.DataFrame(response).T.rename(columns=lambda x: x[0]).drop(0).set_index('id')`,
+        `display(df)`,
+        "```",
 
-    "```python",
-    `numeric_df = df[['id', 'display_name'] +`,
-    `\t[col for col in df.columns if df[col].dtype in ['int64', 'float64'] and col != 'relevance_score']]`,
-    `display(numeric_df)`,
-    "```",
+        "```python",
+        `numeric_df = df[['id', 'display_name'] +`,
+        `\t[col for col in df.columns if df[col].dtype in ['int64', 'float64'] and col != 'relevance_score']]`,
+        `display(numeric_df)`,
+        "```",
 
-    "```python",
-    `try:`,
-    `\tllm = OpenAI(api_token = openapi_token)`,
-    `\tsdf = SmartDataframe(numeric_df, config = { "llm": llm })`,
-    `\tsdf.chat("Plot a chart of this data")`,
-    `except:`,
-    `\tprint("Error when creating SmartDataframe")`,
-    "```",
+        "```python",
+        `try:`,
+        `\tllm = OpenAI(api_token = openapi_token)`,
+        `\tsdf = SmartDataframe(numeric_df, config = { "llm": llm })`,
+        `\tsdf.chat("Plot a chart of this data")`,
+        `except:`,
+        `\tprint("Error when creating SmartDataframe")`,
+        "```",
+      ] : [])
   ].join("\n");
   console.log(codeFence);
   return codeFence;
