@@ -341,8 +341,9 @@ function convertApiUrlsToApiCalls(
     "import json",
     "import pandas as pd",
     "import numpy as np",
-    "from openalex_api import Configuration, ApiClient, AutocompleteApi, " +
-    entities.map((e) => `${capitalize(e)}Api`).join(", "),
+    `from openalex_api import ${[
+      "Configuration", "ApiClient", "AutocompleteApi"
+    ].concat(entities.map((e) => `${capitalize(e)}Api`)).join(", ")}`,
     "",
     `configuration = Configuration(host="https://api.openalex.org")`,
     `autocomplete_api = AutocompleteApi(ApiClient(configuration))`,
