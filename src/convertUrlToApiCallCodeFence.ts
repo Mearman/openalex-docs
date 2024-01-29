@@ -81,13 +81,16 @@ export function convertUrlToApiCallCodeFence(url: string) {
         `numeric_df = df[['id', 'display_name'] +`,
         `\t[col for col in df.columns if df[col].dtype in ['int64', 'float64'] and col != 'relevance_score']]`,
         `display(numeric_df)`,
-
+        ``,
         `try:`,
         `\tllm = OpenAI(api_token = openapi_token)`,
         `\tsdf = SmartDataframe(numeric_df, config = { "llm": llm })`,
         `\tsdf.chat("Plot a chart of this data")`,
         `except:`,
-        `\tprint("Error when creating SmartDataframe")`,
+        `\tif not openapi_token:`,
+        `\t\tprint("Error: openapi_token not set")`,
+        `\telse:`,
+        `\t\tprint("Error when creating SmartDataframe")`,
         "```",
       ])
   ].join("\n");
