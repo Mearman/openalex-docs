@@ -227,14 +227,21 @@ function convertUrlToApiCallCodeFence(url: string) {
   const searchParams: URLSearchParams = typedUrl.searchParams;
   const searchParamsArray: { key: string; value: string; }[] = Array.from(searchParams).map(([key, value]) => ({ key, value }));
 
-  const params: { key: string; value: string | number | boolean; }[] = searchParamsArray.map(
-    ({ key: value }:{ key: string; value: string | number | boolean; }): { key: string; value: string | number | boolean; } => {
+  const params = searchParamsArray.map(
+    (param) => {
       // if value is parsed as a number, return a number
-      if (!isNaN(Number(value))) {
+      let value: string | number | boolean = param.value;
+      if (value.toLowerCase() === "true") {
+        value = true;
+      } else if (value.toLowerCase() === "false") {
+        value = false;
+      } else if (value === "null" && !isNaN(Number(value))) {
         value = Number(value);
+      } else {
+        value = value.replace(/"/g, '\\"');
       }
       return ({
-        key: key.replace("-", "_"),
+        key: param.key.replace("-", "_"),
         value: value
       });
     }
