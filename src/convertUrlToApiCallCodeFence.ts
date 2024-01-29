@@ -75,12 +75,13 @@ export function convertUrlToApiCallCodeFence(url: string) {
     // if there is a results object that is the primary df, if not use the response
     ...(
       singularCall ? [] : [
-        "",
-        // "```python",
+        "```",
+        "```python",
         `numeric_df = df[['id', 'display_name'] +`,
         `\t[col for col in df.columns if df[col].dtype in ['int64', 'float64'] and col != 'relevance_score']]`,
         `display(numeric_df)`,
-        ``,
+        "```",
+        "```python",
         `try:`,
         `\tprompt = "${prompt}" # @param {type:"string"}`,
         `\tSmartDataframe(`,
