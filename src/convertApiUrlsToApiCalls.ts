@@ -100,29 +100,28 @@ export function convertApiUrlsToApiCalls(
     }
   });
 
-  const filteredMatches: Match[] = matches.filter(Boolean) as Match[];
+  const filteredMatches: Match[] = matches.filter(Boolean);
 
   if (filteredMatches.length > 0) {
-    filteredMatches.forEach(({ urls, i }) => {
+    const insertions: Insertion[] = filteredMatches.map(({ urls, i }) => {
       if (urls.length > 0) {
-        const codeFences = urls.map(({ code }) => code);
-        codeFences.forEach((codeFence) => {
-          if (!originalContent.includes(codeFence)) {
-            const codeFenceLines = codeFence.split("\n");
-            const insertionIndex = findInsertionIndex(
+        return urls.map(({ code }): Insertion => {
+          if (!originalContent.includes(code)) {
+            const codeFenceLines = code.split("\n");
+            const insertion = findInsertionIndex(
               codeFenceLines,
               i,
               lines,
-              offset
+              // offset
             );
-            const codeFenceLenght = codeFenceLines.length;
-            lines.splice(insertionIndex, 0, ...codeFenceLines);
-            offset += codeFenceLenght;
             apiCallModified = true;
+            return insertion;
           }
         });
       }
-    });
+    }).flat().filter(Boolean);
+
+    lines = insertAtIndex(lines, insertions);
 
     // Add pip install code fence only if an API call has been modified or added
     if (apiCallModified && !originalContent.includes(pipCommand)) {
@@ -130,4 +129,31 @@ export function convertApiUrlsToApiCalls(
     }
   }
   return lines.join("\n");
+}
+
+type Document = string[];
+export type Insertion = {
+  index: number;
+  lines: string[];
+};
+export type Insertions = Insertion[];
+
+function insertAtIndex(document: Document, insertions: Insertions): Document {
+  // Sort insertions by index in ascending order
+  insertions.sort((a, b) => a.index - b.index);
+
+  let offset = 0;
+
+  insertions.forEach(insertion => {
+    // Adjust index by offset to account for previously added lines
+    const adjustedIndex = insertion.index + offset;
+
+    // Insert lines at the adjusted index
+    document.splice(adjustedIndex, 0, ...insertion.lines);
+
+    // Update offset by the number of lines inserted
+    offset += insertion.lines.length;
+  });
+
+  return document;
 }
