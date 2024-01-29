@@ -68,7 +68,6 @@ export function convertApiUrlsToApiCalls(
   ].join("\n");
 
   let apiCallModified = false; // Flag to track if any API call is modified or added
-  let offset = 0;
 
   const matches: (Match | undefined)[] = lines.map(line => {
     // find any url encoded characters, e.g. \u0026 or %20
