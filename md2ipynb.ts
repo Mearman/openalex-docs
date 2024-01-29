@@ -251,7 +251,7 @@ function convertUrlToApiCallCodeFence(url: string) {
 
   // drop the s from the call if there is an id
   // let call = id ? `get_${entity.slice(0, -1)}` : `get_${entity}`;
-  let call;
+  let call: string;
   let singularCall = false;
   if (entity === "autocomplete") {
     call = `get_${entity}_${id}`;
