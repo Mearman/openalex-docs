@@ -276,10 +276,13 @@ function convertUrlToApiCallCodeFence(url: string) {
       .join(",\n\t")}`,
     ")",
     "",
-    `if hasattr(response, "results"):`,
-    `\tdf = pd.DataFrame(response.results)`,
-    `else:`,
-    `\tdf = pd.DataFrame(response).T.rename(columns=lambda x: x[0]).drop(0).set_index('id')`,
+    ...(
+      singularCall ? [
+        // "# transpose the single result into a dataframe",
+        `df = pd.DataFrame(response).T.rename(columns=lambda x: x[0]).drop(0).set_index('id')`,
+      ] : [
+        `df = pd.DataFrame(response.results)`,
+      ]),
     `display(df)`,
     "```",
     // "print(json.dumps(response.to_dict(), indent=2))",
