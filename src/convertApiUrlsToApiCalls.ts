@@ -34,7 +34,7 @@ export function convertApiUrlsToApiCalls(
     .replace(/(\.[a-z0-9]+)+$/i, ".ipynb")
     .replace(/^\.\//, "");
 
-  const repoRootLink = `[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=GitHub&link=https://github.com/${owner}/${repo})](https://github.com/${owner}/${repo})`;
+  const repoRootLink = `[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=GitHub&link=https://github.com/${owner}/${repo}/tree/${branch})](https://github.com/${owner}/${repo}/tree/${branch})`;
 
   const githubLink = `[![Open in GitHub](https://img.shields.io/badge/Open%20in-GitHub-181717?style=for-the-badge&logo=github&link=https://github.com/${owner}/${repo}/blob/${branch}/${ipynbFilename})](https://github.com/${owner}/${repo}/blob/${branch}/${ipynbFilename})`;
 
