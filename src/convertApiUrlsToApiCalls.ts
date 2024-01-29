@@ -70,13 +70,23 @@ export function convertApiUrlsToApiCalls(
   let apiCallModified = false; // Flag to track if any API call is modified or added
   let offset = 0;
 
-  const matches: (Match | undefined)[] = lines.map((line, i) => {
+  const matches: (Match | undefined)[] = lines.map(line => {
+    // find any url encoded characters, e.g. \u0026 or %20
+    const urlEncodedCharacters = line.match(/\\u[a-z0-9]{4}|%[a-z0-9]{2}/gi);
+    if (urlEncodedCharacters) {
+      // replace all url encoded characters with their decoded equivalents
+      urlEncodedCharacters.forEach((encodedCharacter) => {
+        const decodedCharacter = decodeURIComponent(encodedCharacter);
+        line = line.replace(encodedCharacter, decodedCharacter);
+      });
+    }
+    return line;
+  }).map((line, i) => {
+    return line.replace(/\\_/g, "_")
+      .replace(/\\&/g, "&");
+  }).map((line, i) => {
     const urls = [
-      ...new Set(
-        line
-          .match(/https:\/\/api.openalex.org\/[a-z]+[^)\s'\](`"]+/gi)
-          ?.map((url) => url.replace(/\\_/g, "_").replace(/\\&/g, "&"))
-      ),
+      ...new Set(line.match(/https:\/\/api.openalex.org\/[a-z]+[^)\s'\](`"]+/gi)),
     ];
     if (urls.length > 0) {
       return {
