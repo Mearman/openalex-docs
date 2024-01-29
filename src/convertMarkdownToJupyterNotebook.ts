@@ -9,6 +9,8 @@ export function convertMarkdownToJupyterNotebook(
   const segments = markdown
     .trim()
     .replace(/\\\s/g, "\n")
+    .replace(/\\_/g, "_")
+    .replace(/\\&/g, "&")
     .split(/(```(?:python|bash|sh)\n[\s\S]*?\n```)/g)
 
   const cells = segments
