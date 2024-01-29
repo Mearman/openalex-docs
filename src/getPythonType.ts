@@ -1,6 +1,6 @@
 import { Primitive } from "./Primitive";
 
-export function getPythonType(key, value: Primitive) {
+export function getPythonType(value: Primitive) {
   let paramType;
   if (typeof value === "string") {
     paramType = "string";
@@ -19,6 +19,6 @@ export function getPythonType(key, value: Primitive) {
   if (paramType === "string") {
     value = `"${value}"`;
   }
-  const output = `${value} {type: "${paramType}"}`;
+  const output = `{type: "${paramType}"}`;
   return output;
 }
