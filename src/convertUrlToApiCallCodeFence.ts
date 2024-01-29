@@ -6,19 +6,10 @@ export function convertUrlToApiCallCodeFence(url: string) {
   const searchParams: URLSearchParams = typedUrl.searchParams;
   const searchParamsArray: { key: string; value: string; }[] = Array.from(searchParams).map(([key, value]) => ({ key, value }));
 
-  const params = searchParamsArray.map(
+  const params: { key: string, value: Primitive; }[] = searchParamsArray.map(
     (param) => {
       // if value is parsed as a number, return a number
-      let value: string | number | boolean = param.value;
-      if (value.toLowerCase() === "true") {
-        value = true;
-      } else if (value.toLowerCase() === "false") {
-        value = false;
-      } else if (value === "null" && !isNaN(Number(value))) {
-        value = Number(value);
-      } else {
-        value = value.replace(/"/g, '\\"');
-      }
+      let value: Primitive = parseValue(param.value);
       return ({
         key: param.key.replace("-", "_"),
         value: value
@@ -51,7 +42,7 @@ export function convertUrlToApiCallCodeFence(url: string) {
     `# ${url}`,
     `${params
       // group_by = 0 # @param {type:"integer"}
-      .map(({ key, value }) => `${key}="${value}" # @param ${getPythonType(key, value)}`)
+      .map(({ key, value }) => `${key}=${wrapIfString(value)} # @param ${getPythonType(key, value)}`)
       .join(",\n")}`,
     "",
     `response = ${apiInstance}.${call}(`,
@@ -97,7 +88,7 @@ export function convertUrlToApiCallCodeFence(url: string) {
   console.log(codeFence);
   return codeFence;
 }
-function getPythonType(key, value: string | number | boolean) {
+function getPythonType(key, value: Primitive) {
   let paramType;
   if (typeof value === "string") {
     paramType = "string";
@@ -118,5 +109,32 @@ function getPythonType(key, value: string | number | boolean) {
   }
   const output = `${value} {type: "${paramType}"}`;
   return output;
+}
+
+function parseValue(value: string): Primitive {
+  // Convert to number if possible
+  if (!isNaN(Number(value))) {
+    return Number(value);
+  }
+
+  // Convert to boolean if the string is 'true' or 'false'
+  if (value.toLowerCase() === 'true') {
+    return true;
+  } else if (value.toLowerCase() === 'false') {
+    return false;
+  }
+
+  // Return as string if no conversion is possible
+  return value;
+}
+
+type Primitive = string | number | boolean;
+
+function wrapIfString(value: Primitive): Primitive {
+  if (typeof value === "string") {
+    return `"${value.replace(/"/g, '\\"')}"`;
+  } else {
+    return value;
+  }
 }
 
