@@ -3,6 +3,8 @@ import { getPythonType } from "./getPythonType";
 import { parseValue } from "./parseValue";
 import { wrapIfString } from "./wrapIfString";
 
+const prompt = "Visualize this data";
+
 export function convertUrlToApiCallCodeFence(url: string) {
   const typedUrl = new URL(url);
   const pathname = typedUrl.pathname;
@@ -47,7 +49,7 @@ export function convertUrlToApiCallCodeFence(url: string) {
     `# ${url}`,
     `${params
       // group_by = 0 # @param {type:"integer"}
-      .map(({ key, value }) => `${key}=${wrapIfString(value)} # @param ${getPythonType(key, value)}`)
+      .map(({ key, value }) => `${key}=${wrapIfString(value)} # @param ${getPythonType(value)}`)
       .join(",\n")}`,
     "",
     `response = ${apiInstance}.${call}(`,
@@ -80,9 +82,11 @@ export function convertUrlToApiCallCodeFence(url: string) {
         `display(numeric_df)`,
         ``,
         `try:`,
-        `\tllm = OpenAI(api_token = openapi_token)`,
-        `\tsdf = SmartDataframe(numeric_df, config = { "llm": llm })`,
-        `\tsdf.chat("Plot a chart of this data")`,
+        `\tprompt = "${prompt}" # @param {type:"string"}`,
+        `\tSmartDataframe(`,
+        `\t\tnumeric_df,`,
+        `\t\tconfig={"llm": (OpenAI(api_token=openapi_token))},`,
+        `\t).chat(prompt)`,
         `except:`,
         `\tif not openapi_token:`,
         `\t\tprint("Error: openapi_token not set")`,
