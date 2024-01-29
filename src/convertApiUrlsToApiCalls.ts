@@ -1,9 +1,9 @@
 import * as fs from "fs";
+import * as path from "path";
 import { capitalize } from "./capitalize";
 import { convertUrlToApiCallCodeFence } from "./convertUrlToApiCallCodeFence";
 import { findInsertionIndex } from "./findInsertionIndex";
 import { Match } from "./md2ipynb";
-
 export function convertApiUrlsToApiCalls(
   markdown: string,
   filename: fs.PathLike
@@ -24,7 +24,11 @@ export function convertApiUrlsToApiCalls(
 
   const owner = "Mearman";
   const repo = "openalex-docs";
-  const branch = "main";
+  // const branch = "main";
+  // get branch from current .git repo
+
+  const branch = getGitBranch();
+
   let ipynbFilename = filename
     .toString()
     .replace(/(\.[a-z0-9]+)+$/i, ".ipynb")
@@ -136,6 +140,17 @@ export type Insertion = {
   lines: string[];
 };
 export type Insertions = Insertion[];
+
+function getGitBranch() {
+  // ascend to root of repo
+  let dir = __dirname;
+  while (!fs.existsSync(`${dir}/.git`)) {
+    dir = path.resolve(dir, "..");
+  }
+  const gitHead = fs.readFileSync(`${dir}/.git/HEAD`).toString();
+  const branchName = gitHead.match(/ref: refs\/heads\/(.*)/)?.[1];
+  return branchName;
+}
 
 function insertAtIndex(document: Document, insertions: Insertions): Document {
   // Sort insertions by index in ascending order
