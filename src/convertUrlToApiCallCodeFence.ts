@@ -68,12 +68,13 @@ export function convertUrlToApiCallCodeFence(url: string) {
         `df = pd.DataFrame(response.results)`,
       ]),
     `display(df)`,
-    "```",
+    // "```",
     // "print(json.dumps(response.to_dict(), indent=2))",
     // if there is a results object that is the primary df, if not use the response
     ...(
       singularCall ? [] : [
-        "```python",
+        "",
+        // "```python",
         `numeric_df = df[['id', 'display_name'] +`,
         `\t[col for col in df.columns if df[col].dtype in ['int64', 'float64'] and col != 'relevance_score']]`,
         `display(numeric_df)`,
@@ -87,8 +88,8 @@ export function convertUrlToApiCallCodeFence(url: string) {
         `\t\tprint("Error: openapi_token not set")`,
         `\telse:`,
         `\t\tprint("Error when creating SmartDataframe")`,
-        "```",
-      ])
+      ]),
+    "```",
   ].join("\n");
   console.log(codeFence);
   return codeFence;
