@@ -46,6 +46,7 @@ export function convertUrlToApiCallCodeFence(url: string) {
   // add the id to the call args if it exists
   const codeFence = [
     "```python",
+    `# @title { run: "auto", vertical-output: false }`,
     // original url as comment
     `# ${url}`,
     `${params
@@ -80,9 +81,7 @@ export function convertUrlToApiCallCodeFence(url: string) {
         `numeric_df = df[['id', 'display_name'] +`,
         `\t[col for col in df.columns if df[col].dtype in ['int64', 'float64'] and col != 'relevance_score']]`,
         `display(numeric_df)`,
-        "```",
 
-        "```python",
         `try:`,
         `\tllm = OpenAI(api_token = openapi_token)`,
         `\tsdf = SmartDataframe(numeric_df, config = { "llm": llm })`,
