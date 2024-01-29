@@ -16,7 +16,7 @@ export function recursivelyProcessFilesInDir(
     const stat = fs.statSync(path);
     if (stat.isDirectory()) {
       recursivelyProcessFilesInDir(path, match, fn);
-    } else if (stat.isFile() && file.match(match)) {
+    } else if (stat.isFile() && path.match(match)) {
       // const output = `${path.replace(/(\.[a-z0-9]+)+$/i, "")}${outputFilename}`;
       const content = fs.readFileSync(path, "utf-8");
       fn(path, content);
