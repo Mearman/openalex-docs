@@ -160,6 +160,15 @@ function removeYamlHeaders(markdown: string): string {
   return lines.join("\n");
 }
 
+const repo_root = (() => {
+  // ascend to root of repo
+  let dir = __dirname;
+  while (!fs.existsSync(`${dir}/.git`)) {
+    dir = path.resolve(dir, "..");
+  }
+  return dir;
+})()
+
 export function main() {
   recursivelyProcessFilesInDir(
     ".",
@@ -168,7 +177,7 @@ export function main() {
       const markdownWithoutHeaders = removeYamlHeaders(content);
       const markdownWithApiCalls = convertApiUrlsToApiCalls(
         markdownWithoutHeaders,
-        path.relative(__dirname, filepath.toString())
+        path.relative(repo_root, filepath.toString())
       );
       const contentHasUpdated: boolean = content !== markdownWithApiCalls;
       const markdownWithRelativeLinks = makeLinksRelative(markdownWithApiCalls);
