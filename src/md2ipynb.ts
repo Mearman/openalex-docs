@@ -63,7 +63,7 @@ const repo_root = (() => {
 export function main() {
   recursivelyProcessFilesInDir(
     ".",
-    /^(?!.*node_modules).*\.md$/,
+    /^(?!.*(?:node_modules|\.git|\.venv)).*\.md$/,
     (filepath: fs.PathLike, content: string) => {
       const markdownWithoutHeaders = removeYamlHeaders(content);
       const markdownWithApiCalls = convertApiUrlsToApiCalls(
