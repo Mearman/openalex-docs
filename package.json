@@ -2,7 +2,7 @@
   "author": "",
   "description": "<figure><img src=\".gitbook/assets/openalex_logo_text_transparent_20240117.png\" alt=\"\" width=\"563\"><figcaption></figcaption></figure>",
   "devDependencies": {
-    "wireit": "^0.14.3"
+    "wireit": "^0.14.4"
   },
   "keywords": [],
   "license": "ISC",
@@ -11,7 +11,7 @@
   "scripts": {
     "build": "wireit",
     "serve": "wireit",
-    "md2ipynb": "ts-node ./md2ipynb.ts"
+    "md2ipynb": "ts-node ./src/md2ipynb.ts"
   },
   "version": "1.0.0",
   "wireit": {
