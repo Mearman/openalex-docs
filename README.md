@@ -1,4 +1,7 @@
 [![Open in Colab](https://img.shields.io/badge/Open%20in-Colab-F9AB00?style=for-the-badge&logo=Google%20Colab&link=https://colab.research.google.com/github/Mearman/openalex-docs/blob/main/quickstart-tutorial.ipynb)](https://colab.research.google.com/github/Mearman/openalex-docs/blob/main/quickstart-tutorial.ipynb)
+[![Open in](https://img.shields.io/badge/Open%20in-VSCode%20Web-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=007ACC)](https://github.com/codespaces/new/Mearman/openalex-docs?hide_repo_select=true)
+[![Open in](https://img.shields.io/badge/Open%20in-CodeSpaces-181717?style=for-the-badge&logo=github)](https://open.vscode.dev/Mearman/openalex-docs)
+
 # Overview
 
 <figure><img src=".gitbook/assets/openalex_logo_text_transparent_20240117.png" alt="" width="563"><figcaption></figcaption></figure>
