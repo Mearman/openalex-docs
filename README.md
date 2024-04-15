@@ -1,8 +1,11 @@
+
 [![Open in Colab](https://img.shields.io/badge/Open%20in-Colab-F9AB00?style=for-the-badge&logo=Google%20Colab&link=https://colab.research.google.com/github/Mearman/openalex-docs/blob/main/quickstart-tutorial.ipynb)](https://colab.research.google.com/github/Mearman/openalex-docs/blob/main/quickstart-tutorial.ipynb)
 [![Open in](https://img.shields.io/badge/Open%20in-VSCode%20Web-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=007ACC)](https://github.com/codespaces/new/Mearman/openalex-docs?hide_repo_select=true)
 [![Open in](https://img.shields.io/badge/Open%20in-CodeSpaces-181717?style=for-the-badge&logo=github)](https://open.vscode.dev/Mearman/openalex-docs)
 
 # Overview
+
+[![DOI](https://zenodo.org/badge/745961965.svg)](https://zenodo.org/doi/10.5281/zenodo.10975822)
 
 <figure><img src=".gitbook/assets/openalex_logo_text_transparent_20240117.png" alt="" width="563"><figcaption></figcaption></figure>
 
@@ -12,7 +15,7 @@ This is the **technical documentation for OpenAlex,** including the [**OpenAlex 
 
 ## Data
 
-The OpenAlex dataset describes scholarly [_entities_ ](api-entities/entities-overview.md)and how those entities are connected to each other. Types of entities include [works](api-entities/works/), [authors](api-entities/authors/), [sources](api-entities/sources/), [institutions](api-entities/institutions/), [concepts](api-entities/concepts/), [publishers](api-entities/publishers/), and [funders](api-entities/funders/).
+The OpenAlex dataset describes scholarly [_entities_](api-entities/entities-overview.md)and how those entities are connected to each other. Types of entities include [works](api-entities/works/), [authors](api-entities/authors/), [sources](api-entities/sources/), [institutions](api-entities/institutions/), [concepts](api-entities/concepts/), [publishers](api-entities/publishers/), and [funders](api-entities/funders/).
 
 Together, these make a huge web (or more technically, heterogeneous directed [graph](https://en.wikipedia.org/wiki/Graph\_theory)) of hundreds of millions of entities and billions of connections between them all.
 
@@ -46,4 +49,4 @@ For tech support and bug reports, please visit our [help page](https://openalex.
 
 If you use OpenAlex in research, please cite [this paper](https://arxiv.org/abs/2205.01833):
 
-> Priem, J., Piwowar, H., & Orr, R. (2022). _OpenAlex: A fully-open index of scholarly works, authors, venues, institutions, and concepts_. ArXiv. https://arxiv.org/abs/2205.01833
+> Priem, J., Piwowar, H., & Orr, R. (2022). _OpenAlex: A fully-open index of scholarly works, authors, venues, institutions, and concepts_. ArXiv. <https://arxiv.org/abs/2205.01833>
