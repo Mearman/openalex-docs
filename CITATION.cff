@@ -1,9 +1,26 @@
-cff-version: 1.1.0
-message: "If you use this software, please cite it as below."
+abstract: The GitBook documentation site for OpenAlex
 authors:
-- family-names: Joseph
-  given-names: Mearman
-orcid: https://orcid.org/0000-0000-0000-0000
-title:Mearman/openalex-docs: v1.0.0
+  - affiliation: "@ourresearch"
+    family-names: Richard Orr
+  - family-names: Casey Meyer
+  - affiliation: Impactstory
+    family-names: Jason Priem
+  - family-names: Jason Portenoy
+  - affiliation: "@BangorUniversity"
+    family-names: Joseph Mearman
+  - affiliation: "@weaviate"
+    family-names: Charles
+  - family-names: Sebastian
+  - affiliation: Bristol Myers Squibb
+    family-names: Trang Le
+  - affiliation: "@GitbookIO"
+    family-names: GitBook Bot
+cff-version: 1.2.0
+date-released: "2024-04-15"
+doi: 10.5281/zenodo.10975823
+license:
+  - cc-by-4.0
+repository-code: https://github.com/Mearman/openalex-docs/tree/v1.0.0
+title: "Mearman/openalex-docs: v1.0.0"
+type: software
 version: v1.0.0
-date-released: 2024-04-15
