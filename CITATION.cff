@@ -8,6 +8,7 @@ authors:
   - family-names: Jason Portenoy
   - affiliation: "@BangorUniversity"
     family-names: Joseph Mearman
+    orcid: "https://orcid.org/0000-0002-9315-9760"
   - affiliation: "@weaviate"
     family-names: Charles
   - family-names: Sebastian
@@ -16,11 +17,9 @@ authors:
   - affiliation: "@GitbookIO"
     family-names: GitBook Bot
 cff-version: 1.2.0
-date-released: "2024-04-15"
 doi: 10.5281/zenodo.10975823
 license:
   - cc-by-4.0
-repository-code: https://github.com/Mearman/openalex-docs/tree/v1.0.0
-title: "Mearman/openalex-docs: v1.0.0"
+repository-code: https://github.com/Mearman/openalex-docs
+title: "Mearman/openalex-docs"
 type: software
-version: v1.0.0
